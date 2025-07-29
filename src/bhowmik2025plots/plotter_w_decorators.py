@@ -142,12 +142,15 @@ def load_variables(
     ####################################################################
     ##add SPECIAL CASES
     sc_newvmin = ["odisea_c4_41", "odisea_c4_143", "odisea_c4_51"]
-    # sc_smooth = list(full_table[full_table["Stage"] == 0 and full_table["Stage"] == 1])
     sc_smooth = list(
         full_table[(full_table["Stage"] == 0) | (full_table["Stage"] == 1)]["field"]
     )
-
-    special_cases = {"smooth": sc_smooth, "apply_1%": sc_newvmin}
+    sc_fill_blank_model = ["odisea_c4_094a"]
+    sc_nomodel = ["odisea_c4_094b"]
+    special_cases = {"smooth": sc_smooth,
+                     "apply_1%": sc_newvmin,
+                     "fillmodel":sc_fill_blank_model,
+                     "nomodel": sc_nomodel}
     # print(list(special_cases["smooth"]))
 
     # special_cases["smooth"]
@@ -368,101 +371,122 @@ def plotter(cfg: PlotConfig):
             logger.info(f"1% as vmin were applied to {name}")
         else:
             vmin = 0.05 * vmax  # rms_model
+            
+        if name in cfg.special_cases["nomodel"]:
+            nan_matrix = np.full(data_model.data.shape, np.nan)
+            ax1.imshow(nan_matrix)
+            ax1.set_xticks([])
+            ax1.set_yticks([])
+            ax1.set_xticklabels([])
+            ax1.set_yticklabels([])
+        else:
+            ax1.imshow(
+                data_model.data,
+                origin="lower",
+                cmap="turbo",
+                aspect="equal",
+                vmin=vmin,
+            )
 
-        ax1.imshow(
-            data_model.data,
-            origin="lower",
-            cmap="turbo",
-            aspect="equal",
-            vmin=vmin,
-        )
+            ####################################################
+            # Limits
+            ax1.set_xlim(
+                imsize_model_pix / 2 - (imsize_radius_model_pix) / cfg.zoom_factor,
+                imsize_model_pix / 2 + (imsize_radius_model_pix) / cfg.zoom_factor,
+            )
+            ax1.set_ylim(
+                imsize_model_pix / 2 - (imsize_radius_model_pix) / cfg.zoom_factor,
+                imsize_model_pix / 2 + (imsize_radius_model_pix) / cfg.zoom_factor,
+            )
+            ####################################################
+            ## Fixing ticks (pix) and labels (au) ###
+            adapt_ax1_ticks_labels = ft(ax0=ax0, ax1=ax1)
+            adapt_ax1_ticks_labels.set_adapted_ticks()
+            ####################################################
+            plt.xlabel(r"$\Delta$RA (au)", fontsize=16, fontweight="bold")
+            plt.ylabel(r"$\Delta$DEC (au)", fontsize=16, fontweight="bold")
+        if name in cfg.special_cases["fillmodel"] or name in cfg.special_cases["nomodel"]:
+            # print(name)
+            ax1.set_facecolor('black')
+        
 
-        ####################################################
-        # Limits
-        ax1.set_xlim(
-            imsize_model_pix / 2 - (imsize_radius_model_pix) / cfg.zoom_factor,
-            imsize_model_pix / 2 + (imsize_radius_model_pix) / cfg.zoom_factor,
-        )
-        ax1.set_ylim(
-            imsize_model_pix / 2 - (imsize_radius_model_pix) / cfg.zoom_factor,
-            imsize_model_pix / 2 + (imsize_radius_model_pix) / cfg.zoom_factor,
-        )
-        ####################################################
-        ## Fixing ticks (pix) and labels (au) ###
-        adapt_ax1_ticks_labels = ft(ax0=ax0, ax1=ax1)
-        adapt_ax1_ticks_labels.set_adapted_ticks()
-        ####################################################
-        plt.xlabel(r"$\Delta$RA (au)", fontsize=16, fontweight="bold")
-        plt.ylabel(r"$\Delta$DEC (au)", fontsize=16, fontweight="bold")
 
         #################### AX2 - RADIAL_PROFILE ######################################
         ax2 = plt.subplot(133)
-
-        ax2.plot(r_au, flxx, "k-", linewidth=2)
-
-        # Iterate through each source features in gap_ring_infl_pt.csv
-        for idx, (feature_label, r_feature_au) in enumerate(
-            zip(subset_features["Label"].values, subset_features["R_feature_au"].values)
-        ):
-
-            if feature_label.startswith("D"):
-                color = "b"
-                linestyle = "dotted"
-            elif feature_label.startswith("B"):
-                color = "r"
-                linestyle = "dashed"
-            elif feature_label.startswith("I"):
-                color = "g"
-                linestyle = "dashdot"
-            else:
-                continue  # Skip unknown features
-
-            y_profile = np.interp(r_feature_au, r_au, flxx)
-            plt.vlines(
-                r_feature_au,
-                ymin=y_profile,
-                ymax=0.78,
-                color=color,
-                linestyle=linestyle,
-            )
-
-            if y_profile < 0.78:
-                y_text = 0.8 + 0.08 * (idx % 2)
-            else:
-                y_text = 0.65 * y_profile
-            plt.text(
-                r_feature_au,
-                y_text,
-                feature_label,
-                color=color,
-                fontsize=12,
-                ha="center",
-                va="bottom",
-                rotation=90,
-                fontweight="bold",
-            )
-        ax2.set_xlabel("Radius (au)", fontsize=16, fontweight="bold")
-        ax2.set_ylabel("Normalized Intensity", fontsize=16, fontweight="bold")
-
-        # Write tick labels in boldface
-        for label in ax2.get_xticklabels() + ax2.get_yticklabels():
-            label.set_fontweight("bold")
-        plt.minorticks_on()
-        plt.xlim(left=0)
-        plt.ylim(bottom=0)
-
-        right_limit = plt.gca().get_xlim()[1]
-
-        plt.axvline(r_max, color="gray", linestyle=":", lw=1.5, alpha=0.8)
-        if isbinary == 1:
-            plt.axhspan(0, 0.1, alpha=0.6, color="magenta")
-        elif name in cfg.special_cases["apply_1%"]:
-            plt.axhspan(0, 0.01, alpha=0.6, color="magenta")
+        if name in cfg.special_cases["nomodel"]:
+            ax2.plot()
+            ax2.set_xticks([])
+            ax2.set_yticks([])
+            ax2.set_xticklabels([])
+            ax2.set_yticklabels([])
+            ax2.set_facecolor("black")
         else:
-            plt.axhspan(0, 0.05, alpha=0.6, color="magenta")
-            # plt.axhspan(0, thresh_norm_model, alpha=0.6, color="magenta")
-        plt.axvspan(r_max, right_limit, alpha=0.2, color="gray")
-        ax2.tick_params(axis="both", width=1, top=True, right=True, labelsize=14)
+
+            ax2.plot(r_au, flxx, "k-", linewidth=2)
+
+            # Iterate through each source features in gap_ring_infl_pt.csv
+            for idx, (feature_label, r_feature_au) in enumerate(
+                zip(subset_features["Label"].values, subset_features["R_feature_au"].values)
+            ):
+
+                if feature_label.startswith("D"):
+                    color = "b"
+                    linestyle = "dotted"
+                elif feature_label.startswith("B"):
+                    color = "r"
+                    linestyle = "dashed"
+                elif feature_label.startswith("I"):
+                    color = "g"
+                    linestyle = "dashdot"
+                else:
+                    continue  # Skip unknown features
+
+                y_profile = np.interp(r_feature_au, r_au, flxx)
+                plt.vlines(
+                    r_feature_au,
+                    ymin=y_profile,
+                    ymax=0.78,
+                    color=color,
+                    linestyle=linestyle,
+                )
+
+                if y_profile < 0.78:
+                    y_text = 0.8 + 0.08 * (idx % 2)
+                else:
+                    y_text = 0.65 * y_profile
+                plt.text(
+                    r_feature_au,
+                    y_text,
+                    feature_label,
+                    color=color,
+                    fontsize=12,
+                    ha="center",
+                    va="bottom",
+                    rotation=90,
+                    fontweight="bold",
+                )
+            ax2.set_xlabel("Radius (au)", fontsize=16, fontweight="bold")
+            ax2.set_ylabel("Normalized Intensity", fontsize=16, fontweight="bold")
+
+            # Write tick labels in boldface
+            for label in ax2.get_xticklabels() + ax2.get_yticklabels():
+                label.set_fontweight("bold")
+            plt.minorticks_on()
+            plt.xlim(left=0)
+            plt.ylim(bottom=0)
+
+            right_limit = plt.gca().get_xlim()[1]
+
+            plt.axvline(r_max, color="gray", linestyle=":", lw=1.5, alpha=0.8)
+            if isbinary == 1:
+                plt.axhspan(0, 0.1, alpha=0.6, color="magenta")
+            elif name in cfg.special_cases["apply_1%"]:
+                plt.axhspan(0, 0.01, alpha=0.6, color="magenta")
+            else:
+                plt.axhspan(0, 0.05, alpha=0.6, color="magenta")
+                # plt.axhspan(0, thresh_norm_model, alpha=0.6, color="magenta")
+            plt.axvspan(r_max, right_limit, alpha=0.2, color="gray")
+            ax2.tick_params(axis="both", width=1, top=True, right=True, labelsize=14)
 
         #######################################################################################
         ax0.set_box_aspect(1)

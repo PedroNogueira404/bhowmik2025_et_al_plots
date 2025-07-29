@@ -14,8 +14,6 @@ import images_latex
 
 from utils import PathUtils
 
-# logging.captureWarnings(True)
-
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 

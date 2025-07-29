@@ -140,7 +140,7 @@ class AddPatches:
     def add_flux_text(self, flux=None) -> None:
         """_summary_"""
         return self.ax.text(
-            0.715,
+            0.78,
             0.11,
             s=f"{flux:.2f} mJy",
             transform=self.ax.transAxes,
