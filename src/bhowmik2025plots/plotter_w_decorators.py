@@ -75,12 +75,7 @@ def load_variables(
     features_data = pd.read_csv(csv_features, index_col=False)
     features_data["Target"] = features_data["Target"].astype(str).str.lower()
     full_table = pd.read_csv(f"{paths.input_dir}/full_table.csv", index_col=False)
-    # full_table_expanded = pd.read_csv(
-    #     f"{paths.input_dir}/full_table_expanded.csv", index_col=False
-    # )
-    # index_to_groups = (
-    #     full_table_expanded.groupby(by="id")["Group"].apply(func=list).to_dict()
-    # )
+
     index_to_groups = full_table.groupby(by="id")["Group"].apply(func=list).to_dict()
     ################################################################################
     # Ask user if they want to proceed with flux-ordered (PDF) output
@@ -113,10 +108,6 @@ def load_variables(
         dpi,
     )
 
-    # print(
-    #     f"\nChosen flux_ordered = {flux_ordered} | Images will be saved as {_im_type} files\n",
-    #     50 * "#",
-    # )
 
     first_file_input = input("\n Start index (blank = 0): ")
     last_file_input = input("End index (blank or 'None' = no end):")
@@ -147,16 +138,13 @@ def load_variables(
     )
     sc_fill_blank_model = ["odisea_c4_094a"]
     sc_nomodel = ["odisea_c4_094b"]
-    special_cases = {"smooth": sc_smooth,
-                     "apply_1%": sc_newvmin,
-                     "fillmodel":sc_fill_blank_model,
-                     "nomodel": sc_nomodel}
-    # print(list(special_cases["smooth"]))
+    special_cases = {
+        "smooth": sc_smooth,
+        "apply_1%": sc_newvmin,
+        "fillmodel": sc_fill_blank_model,
+        "nomodel": sc_nomodel,
+    }
 
-    # special_cases["smooth"]
-    # name = "test2"
-    # if name in special_cases["smooth"]:
-    #     print(special_cases["smooth"])
 
     ####################################################################
 
@@ -192,11 +180,7 @@ def time_and_loadbar_decorator(func) -> None:
         secs = f"{elapsed_time % 60:05.2f}"
 
         logger.info("Elapsed plotting/saving time: %02d:%s", minutes, secs)
-        # print(
-        #     f"Elapsed plotting and saving time: {elapsed_time:.2f} seconds",
-        #     f"{int(elapsed_time//60)}:{elapsed_time%60:05.2f} minutes",
-        #     sep=" | ",
-        # )
+
         return result
 
     return wrapper
@@ -371,7 +355,7 @@ def plotter(cfg: PlotConfig):
             logger.info(f"1% as vmin were applied to {name}")
         else:
             vmin = 0.05 * vmax  # rms_model
-            
+
         if name in cfg.special_cases["nomodel"]:
             nan_matrix = np.full(data_model.data.shape, np.nan)
             ax1.imshow(nan_matrix)
@@ -405,11 +389,12 @@ def plotter(cfg: PlotConfig):
             ####################################################
             plt.xlabel(r"$\Delta$RA (au)", fontsize=16, fontweight="bold")
             plt.ylabel(r"$\Delta$DEC (au)", fontsize=16, fontweight="bold")
-        if name in cfg.special_cases["fillmodel"] or name in cfg.special_cases["nomodel"]:
+        if (
+            name in cfg.special_cases["fillmodel"]
+            or name in cfg.special_cases["nomodel"]
+        ):
             # print(name)
-            ax1.set_facecolor('black')
-        
-
+            ax1.set_facecolor("black")
 
         #################### AX2 - RADIAL_PROFILE ######################################
         ax2 = plt.subplot(133)
@@ -426,7 +411,10 @@ def plotter(cfg: PlotConfig):
 
             # Iterate through each source features in gap_ring_infl_pt.csv
             for idx, (feature_label, r_feature_au) in enumerate(
-                zip(subset_features["Label"].values, subset_features["R_feature_au"].values)
+                zip(
+                    subset_features["Label"].values,
+                    subset_features["R_feature_au"].values,
+                )
             ):
 
                 if feature_label.startswith("D"):
@@ -504,13 +492,12 @@ def plotter(cfg: PlotConfig):
             os.makedirs(save_dir, exist_ok=True)
             save_path = os.path.join(save_dir, image_name)
             plt.savefig(save_path, bbox_inches="tight", dpi=cfg.dpi)
-            # plt.show()
             if cfg.verbose:
                 print(f"Image saved as {image_name} in: \n {save_path}")
                 print(50 * "#")
 
             plt.close()
-            # time.sleep(0.01)
+            
         yield count
 
 
