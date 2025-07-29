@@ -1,0 +1,42 @@
+[INFO 14:58:40]: You are rewriting tables and outputs by running the main function. [(l:102) [main.py]]
+##################################################
+[INFO 14:58:40]: The paths are defined as: 
+PathUtils(root=/home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025plots)
+Input Directory: /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025plots/input_files
+FITS Directory: /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025plots/input_files/fits_files
+Radial Profile Directory: /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025plots/input_files/frank_profiles
+Output Directory: /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025plots/outputs
+LaTeX Directory: /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025plots/outputs/generated_figures_for_tex
+################################################## [(l:40) [paths.py]]
+##################################################
+[INFO 14:58:40]: There is no mismatch - It is safe to merge!! [(l:171) [table_creator.py]]
+##################################################
+[INFO 14:58:40]: Saved table.csv successfully! [(l:210) [table_creator.py]]
+##################################################
+[INFO 14:58:40]: Saved full_table.csv successfully! [(l:230) [table_creator.py]]
+##################################################
+[WARNING 14:58:44]: Flush mode enabled. Deleting content in /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025plots/outputs [(l:75) [main.py]]
+##################################################
+[INFO 14:58:44]: Deleted folder: /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025plots/outputs/generated_figures_for_tex [(l:81) [main.py]]
+##################################################
+[INFO 14:58:44]: Deleted folder: /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025plots/outputs/pdf [(l:81) [main.py]]
+##################################################
+[INFO 14:58:44]: Deleted folder: /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025plots/outputs/png [(l:81) [main.py]]
+##################################################
+[INFO 14:58:46]: flux_ordered was set to True, and files will be saved as pdf with 600 dpi [(l:109) [plotter_w_decorators.py]]
+##################################################
+[INFO 14:58:47]: You have chosen  [ 0 - 101 ] range of files [(l:135) [plotter_w_decorators.py]]
+##################################################
+[INFO 15:01:05]: 1% as vmin were applied to odisea_c4_51 [(l:371) [plotter_w_decorators.py]]
+##################################################
+[INFO 15:01:06]: 1% as vmin were applied to odisea_c4_143 [(l:371) [plotter_w_decorators.py]]
+##################################################
+[INFO 15:01:07]: 1% as vmin were applied to odisea_c4_41 [(l:371) [plotter_w_decorators.py]]
+##################################################
+[INFO 15:01:12]: Elapsed plotting/saving time: 02:25.05 [(l:194) [plotter_w_decorators.py]]
+##################################################
+[INFO 15:01:12]: The files are ordered in decreasing flux order in latex files [(l:96) [images_latex.py]]
+##################################################
+[INFO 15:01:12]: Latex grid files generated!!
+################################################## [(l:139) [images_latex.py]]
+##################################################
