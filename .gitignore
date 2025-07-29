@@ -3,4 +3,5 @@ src/bhowmik2025plots/outputs/
 __pycache__/
 *.pdf
 *.png
+src/input_files/utils
 setup.py

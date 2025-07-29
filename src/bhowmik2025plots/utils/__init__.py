@@ -9,7 +9,4 @@ from .add_patches import AddPatches
 from .arc_to_au import arc_to_au
 from .fix_ticks import FixTicks
 
-# from .plot_utils import PlotUtils
 from .paths import PathUtils
-
-# paths = PathUtils()
