@@ -1,4 +1,6 @@
-src/bhowmik2025plots/src/bhowmik2025plots/input_files/
-src/bhowmik2025plots/src/bhowmik2025plots/outputs/
+src/bhowmik2025plots/input_files/
+src/bhowmik2025plots/outputs/
+*/__pycache__/*
 *.pdf
 *.png
+setup.py
