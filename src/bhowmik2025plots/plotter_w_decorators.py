@@ -405,15 +405,22 @@ def plotter(cfg: PlotConfig):
             ax2.set_facecolor("black")
         else:
 
+            ax2 = plt.subplot(133)
+
             ax2.plot(r_au, flxx, "k-", linewidth=2)
 
             # Iterate through each source features in gap_ring_infl_pt.csv
-            for idx, (feature_label, r_feature_au) in enumerate(
-                zip(
-                    subset_features["Label"].values,
-                    subset_features["R_feature_au"].values,
+
+            # Create a sorted list of labels
+            sorted_labels = list(
+                subset_features["Label"].sort_values(
+                    key=lambda x: x.str.split("-").str[1].astype(int)
                 )
-            ):
+            )
+            # Loop through the sorted labels, but get the matching R_au from the original DataFrame
+            for idx, feature_label in enumerate(sorted_labels):
+                row = subset_features[subset_features["Label"] == feature_label]
+                r_feature_au = row["R_feature_au"].values[0]
 
                 if feature_label.startswith("D"):
                     color = "b"
@@ -437,7 +444,7 @@ def plotter(cfg: PlotConfig):
                 )
 
                 if y_profile < 0.78:
-                    y_text = 0.8 + 0.08 * (idx % 2)
+                    y_text = 0.8 + 0.11 * (idx % 2)
                 else:
                     y_text = 0.65 * y_profile
                 plt.text(
@@ -451,6 +458,7 @@ def plotter(cfg: PlotConfig):
                     rotation=90,
                     fontweight="bold",
                 )
+
             ax2.set_xlabel("Radius (au)", fontsize=16, fontweight="bold")
             ax2.set_ylabel("Normalized Intensity", fontsize=16, fontweight="bold")
 
