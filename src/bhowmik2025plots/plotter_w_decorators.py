@@ -297,7 +297,7 @@ def plotter(cfg: PlotConfig):
 
         if cfg.smooth or (name in cfg.special_cases["smooth"]):
             # Smooth the disk
-            _sigma = 2
+            _sigma = 3
             smooth_data = gaussian_filter(data_data, sigma=_sigma, mode="nearest")
             im0 = ax0.imshow(
                 X=smooth_data,
