@@ -13,7 +13,10 @@ Automated pipeline to convert input data tables, FITS files, and radial profiles
 ![image_example](/src/bhowmik2025plots/imagetest.png)
 
 #### Grid Example (LaTeX output)  
-![grid_example](/src/bhowmik2025plots/grid_example.png)
+
+<p align="center">
+  <img src="/src/bhowmik2025plots/grid_example.png" alt="grid_example">
+</p>
 
 ---
 
@@ -104,9 +107,10 @@ All modules can be run in sequence via `main.py`.
 
     - Special cases: `1%` (e.g., `C4_41`, `C4_143`, `C4_51`)
 
-  - Disks in Stage 0 or 1: Gaussian smoothing applied  
+  - Disks in Stage 0 or 1: Gaussian smoothing applied
+  
     ```python
-    gaussian_filter(data, sigma=0, mode="nearest")
+    scipy.ndimage.gaussian_filter(data, sigma=0, mode="nearest")
     ```
 
   - `ODISEA_C4_094a` and `094b`: special treatment for model zoom  
