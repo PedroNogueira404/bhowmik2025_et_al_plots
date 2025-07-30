@@ -53,7 +53,7 @@ logger.addHandler(file_handler)
 paths = PathUtils()
 
 
-def main(reverse: bool = None) -> None:
+def main(reverse: bool = True) -> None:
     """
     Main function calling all core steps of the pipeline.
     """
