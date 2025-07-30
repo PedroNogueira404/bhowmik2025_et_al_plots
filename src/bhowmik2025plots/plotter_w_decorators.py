@@ -108,7 +108,6 @@ def load_variables(
         dpi,
     )
 
-
     first_file_input = input("\n Start index (blank = 0): ")
     last_file_input = input("End index (blank or 'None' = no end):")
 
@@ -144,7 +143,6 @@ def load_variables(
         "fillmodel": sc_fill_blank_model,
         "nomodel": sc_nomodel,
     }
-
 
     ####################################################################
 
@@ -497,7 +495,7 @@ def plotter(cfg: PlotConfig):
                 print(50 * "#")
 
             plt.close()
-            
+
         yield count
 
 
