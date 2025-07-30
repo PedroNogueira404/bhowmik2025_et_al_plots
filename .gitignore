@@ -5,3 +5,4 @@ __pycache__/
 src/input_files/utils
 setup.py
 src/bhowmik2025_et_al_plots/my_logs.log
+src/bhowmik2025_et_al_plots.egg-info/
