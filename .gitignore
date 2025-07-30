@@ -4,3 +4,4 @@ __pycache__/
 *.pdf
 src/input_files/utils
 setup.py
+src/bhowmik2025plots/my_logs.log

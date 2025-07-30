@@ -90,9 +90,9 @@ All modules can be run in sequence via `main.py`.
 
 - **Plot order**:
   - If `png`: follows the index from `table.csv` 
-  - If `pdf`: sorts by flux (low → high)
+  - If `pdf`: sorts by flux (low → high) inside the given range
 
-  > Example: Index `100`  
+  > Example: Index `100`, and range: `0 - 100`  
   > - In PNG mode → `ODISEA_C4_130`  
   > - In PDF mode → `RA162813.74` (highest flux) of this sample
 

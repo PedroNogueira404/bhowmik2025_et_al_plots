@@ -412,9 +412,10 @@ def plotter(cfg: PlotConfig):
             # Iterate through each source features in gap_ring_infl_pt.csv
 
             # Create a sorted list of labels
+            # print(subset_features["Label"].dropna())
             sorted_labels = list(
                 subset_features["Label"].sort_values(
-                    key=lambda x: x.str.split("-").str[1].astype(int)
+                    key=lambda x: x.str.split("-").str[1].astype(int) 
                 )
             )
             # Loop through the sorted labels, but get the matching R_au from the original DataFrame
