@@ -13,7 +13,11 @@ class PathUtils:
     """
 
     def __init__(self, root=None):
-        self.root = os.path.abspath(root) if root else os.path.abspath(".")
+        utils_dir = os.path.dirname(os.path.abspath(__file__))
+        base_path = os.path.dirname(utils_dir)  # Go one level up
+        # base_path = os.path.dirname(os.path.abspath(__file__))
+        self.root = os.path.abspath(root) if root else base_path
+        # self.root = os.path.abspath(root) if root else os.path.abspath(".")
         self.input_dir = os.path.join(self.root, "input_files")
         self.fits_dir = os.path.join(self.input_dir, "fits_files")
         self.radial_prof_dir = os.path.join(self.input_dir, "frank_profiles")

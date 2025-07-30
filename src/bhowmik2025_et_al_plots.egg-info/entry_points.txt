@@ -1,0 +1,5 @@
+[console_scripts]
+npmain = bhowmik2025_et_al_plots.__main__:main
+npplotter = bhowmik2025_et_al_plots.plotter_w_decorators:main
+nptables = bhowmik2025_et_al_plots.table_creator:main
+nptex = bhowmik2025_et_al_plots.images_latex:main

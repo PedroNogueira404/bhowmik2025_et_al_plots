@@ -29,7 +29,8 @@ from astropy.coordinates import SkyCoord
 from astropy.utils.exceptions import AstropyWarning
 
 # === Internal ===
-from utils import AddPatches, arc_to_au, FixTicks as ft, PathUtils
+
+from bhowmik2025_et_al_plots.utils import AddPatches, arc_to_au, FixTicks as ft, PathUtils
 
 warnings.simplefilter("ignore", category=AstropyWarning)
 ################################################################################
@@ -510,5 +511,9 @@ def plotter(cfg: PlotConfig):
 
 if __name__ == "__main__":
     print(f"Running {__file__.rsplit('/',maxsplit=1)[-1]} directly")
+    cfg = load_variables(verbose=False, _zoom_factor=1, smooth=False)
+    plotter(cfg)
+    
+def main():
     cfg = load_variables(verbose=False, _zoom_factor=1, smooth=False)
     plotter(cfg)

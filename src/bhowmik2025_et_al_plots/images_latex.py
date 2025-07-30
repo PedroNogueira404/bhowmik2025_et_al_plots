@@ -4,7 +4,7 @@ import logging
 import pandas as pd
 
 
-from utils import PathUtils
+from bhowmik2025_et_al_plots.utils import PathUtils
 
 logger = logging.getLogger(__name__)
 paths = PathUtils()
@@ -144,9 +144,7 @@ if __name__ == "__main__":
     logger.info(f"Running {__file__.rsplit('/',maxsplit=1)[-1]} directly")
     generate_all_latex_figures()
 
-# for filename in glob.glob(f"{paths.latex_dir}/*.tex"):
-#     shutil.move(filename, paths.latex_dir)
-# shutil.move(f"{ROOT_PROJECT}/*.tex", f"{ROOT_PROJECT}/generated_figures_for_tex/")
-
-# \captionof{figure}{Class I and Flat spectrum disks with cavities.}
-# \label{fig:cavC1}
+def main():
+    print(f"Running {__file__.rsplit('/',maxsplit=1)[-1]} directly")
+    logger.info(f"Running {__file__.rsplit('/',maxsplit=1)[-1]} directly")
+    generate_all_latex_figures()

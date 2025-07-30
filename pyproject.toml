@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name="bhowmik2025_et_al_plots"
+version="1.0.0"
+
+[project.scripts]
+npmain = "bhowmik2025_et_al_plots.__main__:main"
+nptables = "bhowmik2025_et_al_plots.table_creator:main"
+npplotter = "bhowmik2025_et_al_plots.plotter_w_decorators:main"
+nptex = "bhowmik2025_et_al_plots.images_latex:main"

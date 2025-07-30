@@ -8,11 +8,11 @@ import shutil
 import os
 import logging
 
-import table_creator
-import plotter_w_decorators
-import images_latex
+from bhowmik2025_et_al_plots import table_creator
+from bhowmik2025_et_al_plots import plotter_w_decorators
+from bhowmik2025_et_al_plots import images_latex
 
-from utils import PathUtils
+from bhowmik2025_et_al_plots.utils import PathUtils
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)

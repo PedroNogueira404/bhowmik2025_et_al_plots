@@ -13,7 +13,8 @@ import logging
 import os
 import re
 import pandas as pd
-from utils import PathUtils
+
+from bhowmik2025_et_al_plots.utils import PathUtils
 
 logger = logging.getLogger(__name__)
 
@@ -248,5 +249,9 @@ def creating_tables(verbose: bool = False, debug: bool = False) -> None:
 
 
 if __name__ == "__main__":
+    print(f"\nRunning {__file__.rsplit('/',maxsplit=1)[-1]} directly\n")
+    creating_tables(verbose=True, debug=False)
+
+def main():
     print(f"\nRunning {__file__.rsplit('/',maxsplit=1)[-1]} directly\n")
     creating_tables(verbose=True, debug=False)
