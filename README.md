@@ -10,12 +10,12 @@ Automated pipeline to convert input data tables, FITS files, and radial profiles
 ### 📌 Example Output
 
 #### Individual Plot Example  
-![image_example](/src/bhowmik2025plots/imagetest.png)
+![image_example](/src/bhowmik2025_et_al_plots/imagetest.png)
 
 #### Grid Example (LaTeX output)  
 
 <p align="center">
-  <img src="/src/bhowmik2025plots/grid_example.png" alt="grid_example">
+  <img src="/src/bhowmik2025_et_al_plots/grid_example.png" alt="grid_example">
 </p>
 
 ---
