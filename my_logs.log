@@ -1,0 +1,38 @@
+[INFO 11:53:45]: The paths are defined as: 
+PathUtils(root=/home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025_et_al_plots)
+Input Directory: /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025_et_al_plots/input_files
+FITS Directory: /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025_et_al_plots/input_files/fits_files
+Radial Profile Directory: /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025_et_al_plots/input_files/frank_profiles
+Output Directory: /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025_et_al_plots/outputs
+LaTeX Directory: /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025_et_al_plots/outputs/generated_figures_for_tex
+################################################## [(l:44) [paths.py]]
+##################################################
+[INFO 11:53:45]: There is no mismatch - It is safe to merge!! [(l:172) [table_creator.py]]
+##################################################
+[INFO 11:53:45]: Saved table.csv successfully! [(l:211) [table_creator.py]]
+##################################################
+[INFO 11:53:45]: Saved full_table.csv successfully! [(l:231) [table_creator.py]]
+##################################################
+[WARNING 11:53:53]: Flush mode enabled. Deleting content in /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025_et_al_plots/outputs [(l:73) [__main__.py]]
+##################################################
+[INFO 11:53:53]: Deleted folder: /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025_et_al_plots/outputs/generated_figures_for_tex [(l:79) [__main__.py]]
+##################################################
+[INFO 11:53:53]: Deleted folder: /home/pnogueira/chewiepoint/bhowmik_2025/bhowmik2025_et_al_plots/src/bhowmik2025_et_al_plots/outputs/pdf [(l:79) [__main__.py]]
+##################################################
+[INFO 11:53:56]: flux_ordered was set to True, and files will be saved as pdf with 600 dpi [(l:105) [plotter_w_decorators.py]]
+##################################################
+[INFO 11:54:05]: You have chosen  [ 0 - 101 ] range of files [(l:126) [plotter_w_decorators.py]]
+##################################################
+[INFO 11:56:21]: 1% as vmin were applied to odisea_c4_51 [(l:354) [plotter_w_decorators.py]]
+##################################################
+[INFO 11:56:23]: 1% as vmin were applied to odisea_c4_143 [(l:354) [plotter_w_decorators.py]]
+##################################################
+[INFO 11:56:24]: 1% as vmin were applied to odisea_c4_41 [(l:354) [plotter_w_decorators.py]]
+##################################################
+[INFO 11:56:29]: Elapsed plotting/saving time: 02:24.21 [(l:181) [plotter_w_decorators.py]]
+##################################################
+[INFO 11:56:29]: The files are ordered in decreasing flux order in latex files [(l:96) [images_latex.py]]
+##################################################
+[INFO 11:56:29]: Latex grid files generated!!
+################################################## [(l:139) [images_latex.py]]
+##################################################
