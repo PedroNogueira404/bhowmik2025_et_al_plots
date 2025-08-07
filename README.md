@@ -159,7 +159,7 @@ You can also call the core modules individually by the names you defined.
   - Disks in Stage 0 or 1: Gaussian smoothing applied
   
     ```python
-    scipy.ndimage.gaussian_filter(data, sigma=0, mode="nearest")
+    scipy.ndimage.gaussian_filter(data, sigma=2, mode="nearest")
     ```
 
   - `ODISEA_C4_094a` and `094b`: special treatment for model zoom  

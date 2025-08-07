@@ -475,13 +475,12 @@ def plotter(cfg: PlotConfig):
 
             plt.axvline(r_max, color="gray", linestyle=":", lw=1.5, alpha=0.8)
             if isbinary == 1:
-                plt.axhspan(0, 0.1, alpha=0.6, color="magenta")
+                plt.axhspan(0, 0.1, alpha=0.5, color="red")
             elif name in cfg.special_cases["apply_1%"]:
-                plt.axhspan(0, 0.01, alpha=0.6, color="magenta")
+                plt.axhspan(0, 0.01, alpha=0.5, color="red")
             else:
-                plt.axhspan(0, 0.05, alpha=0.6, color="magenta")
-                # plt.axhspan(0, thresh_norm_model, alpha=0.6, color="magenta")
-            plt.axvspan(r_max, right_limit, alpha=0.2, color="gray")
+                plt.axhspan(0, 0.05, alpha=0.5, color="red")
+            plt.axvspan(r_max, right_limit, alpha=0.5, color="gray")
             ax2.tick_params(axis="both", width=1, top=True, right=True, labelsize=14)
 
         #######################################################################################
