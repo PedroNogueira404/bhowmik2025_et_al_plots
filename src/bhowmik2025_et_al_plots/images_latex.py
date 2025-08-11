@@ -194,13 +194,11 @@ def generate_all_latex_figures(cfg: GridConfig) -> None:
 if __name__ == "__main__":
     print(f"Running {__file__.rsplit('/',maxsplit=1)[-1]} directly")
     logger.info(f"Running {__file__.rsplit('/',maxsplit=1)[-1]} directly")
-    # cfg = load_variables_grid(reverse=False)
-    # generate_all_latex_figures(cfg)
 
 
 def main():
     print(f"Running {__file__.rsplit('/',maxsplit=1)[-1]} directly")
     logger.info(f"Running {__file__.rsplit('/',maxsplit=1)[-1]} directly")
 
-    cfg = load_variables_grid(reverse=False)
+    cfg = load_variables_grid(reverse=True)
     generate_all_latex_figures(cfg)
