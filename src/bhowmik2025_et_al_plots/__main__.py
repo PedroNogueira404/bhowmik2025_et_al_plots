@@ -82,6 +82,20 @@ def main(reverse: bool = True) -> None:
         # print(50 * "#")
         logger.info("Flush aborted by user. No folders deleted.")
         # print(50 * "#")
+    # singlecolumn = (
+    #     input(
+    #         "⚠️  Type 'y' or 'yes' use single collumn format on your grids. Anything else will cancel:\n"
+    #     )
+    #     .strip()
+    #     .lower()
+    # )
+    # if singlecolumn in ["y", "yes"]:
+    #     doublecol = False
+    #     logger.info("Single column format enabled for LaTeX grids.")
+    # else:
+    #     doublecol = True
+    #     logger.info("Double column format enabled for LaTeX grids.")
+
     cfg = plotter_w_decorators.load_variables(
         verbose=False,
         _zoom_factor=1,
@@ -90,9 +104,14 @@ def main(reverse: bool = True) -> None:
         dpi_png=100,
         dpi_pdf=600,
     )
+
     plotter_w_decorators.plotter(cfg)
+
     if cfg.flux_ordered:
-        images_latex.generate_all_latex_figures(reverse=reverse)
+        reverse = True
+    cfg_latex = images_latex.load_variables_grid(reverse=reverse)
+
+    images_latex.generate_all_latex_figures(cfg=cfg_latex)
 
 
 if __name__ == "__main__":
