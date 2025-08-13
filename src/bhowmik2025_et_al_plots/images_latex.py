@@ -24,6 +24,9 @@ def latex_images(images, doublecol: bool, folder, super_folder="pdf"):
     Returns:
         str: LaTeX code for the figure row.
     """
+    dclass = folder.rsplit("+")[0]
+    dstage = folder.rsplit("+")[1]
+    
     im_file_lenght = len(images)
 
     if doublecol:
@@ -44,9 +47,11 @@ def latex_images(images, doublecol: bool, folder, super_folder="pdf"):
             latex += "\\vrulesep\n"
         latex += (
             "\\captionof{figure}{"
-            + "The left images in each panel are the images created by tCLEAN, the middle and right images are the models and 1d radial profiles created by FRANK of disks that are "
-            + f"{folder.replace('_', '-') if '_' in folder else folder}"
-            + "}\n"
+            + "The left images in each panel are the images created by tCLEAN, the middle and right images are the models and 1d radial profiles created by FRANK of disks that are Class "
+            + f"{dclass}"
+            + " and Stage "
+            + f"{dstage}"
+            + ".}\n"
         )
     elif doublecol is False:
         latex = ""
@@ -89,11 +94,13 @@ def latex_images(images, doublecol: bool, folder, super_folder="pdf"):
                 latex += "\\end{minipage}}%\n"
         latex += (
             "\\captionof{figure}{"
-            + "The left images in each panel are the images created by tCLEAN, the middle and right images are the models and 1d radial profiles created by FRANK of disks that are "
-            + f"{folder.replace('_', '-') if '_' in folder else folder}"
-            + "}\n"
+            + "The left images in each panel are the images created by tCLEAN, the middle and right images are the models and 1d radial profiles created by FRANK of disks that are Class "
+            + f"{dclass}"
+            + " and Stage "
+            + f"{dstage}"
+            + ".}\n"
         )
-        latex += "\\vspace{0.8cm}"
+    latex += "\\vspace{0.8cm}"
     return latex
 
 
@@ -163,7 +170,7 @@ def generate_all_latex_figures(cfg: GridConfig) -> None:
                 f.write(
                     latex_images(
                         images=pdf_files,
-                        folder=group,
+                        folder=group.replace("_", "-") if "_" in group else group,
                         doublecol=cfg.doublecolumns,
                     )
                 )
