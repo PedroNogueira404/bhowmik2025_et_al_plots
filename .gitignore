@@ -1,5 +1,6 @@
 src/bhowmik2025_et_al_plots/input_files/
 src/bhowmik2025_et_al_plots/outputs/
+src/bhowmik2025_et_al_plots/stages_demo_plotter.py
 __pycache__/
 *.pdf
 src/input_files/utils
