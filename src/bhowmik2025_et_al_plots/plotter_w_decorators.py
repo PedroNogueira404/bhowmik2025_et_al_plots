@@ -479,14 +479,20 @@ def plotter(cfg: PlotConfig):
 
             right_limit = plt.gca().get_xlim()[1]
 
-            plt.axvline(r_max, color="gray", linestyle=":", lw=1.5, alpha=0.8)
+            plt.axvline(r_max, color="black", linestyle=":", lw=2.5, alpha=0.8)
             if isbinary == 1:
-                plt.axhspan(0, 0.1, alpha=0.5, color="red")
+                imax=0.1
+                plt.axhspan(0, imax, alpha=0.2, color="red")
+                plt.axhline(imax, color="black", linestyle=":", lw=2.5, alpha=0.8)
             elif name in cfg.special_cases["apply_1%"]:
-                plt.axhspan(0, 0.01, alpha=0.5, color="red")
+                imax=0.01
+                plt.axhspan(0, imax, alpha=0.2, color="red")
+                plt.axhline(imax, color="black", linestyle=":", lw=2.5, alpha=0.8)
             else:
-                plt.axhspan(0, 0.05, alpha=0.5, color="red")
-            plt.axvspan(r_max, right_limit, alpha=0.5, color="gray")
+                imax=0.05
+                plt.axhspan(0, imax, alpha=0.2, color="red")
+                plt.axhline(imax, color="black", linestyle=":", lw=2.5, alpha=0.8)
+            plt.axvspan(r_max, right_limit, alpha=0.2, color="gray",hatch='/')
             ax2.tick_params(axis="both", width=1, top=True, right=True, labelsize=14)
 
         #######################################################################################

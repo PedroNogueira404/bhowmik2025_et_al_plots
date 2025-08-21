@@ -157,7 +157,7 @@ class AddPatches:
             ),
         )
 
-    def add_colorbar(self, fig=None, im=None) -> None:
+    def add_colorbar(self, fig=None, im=None, pos = "top", orientation="horizontal") -> None:
         """
         Add_colorbar
 
@@ -167,10 +167,10 @@ class AddPatches:
 
         ax = self.ax
         divider = make_axes_locatable(ax)
-        cax = divider.append_axes("top", size="3%", pad=0)
-        cbar = fig.colorbar(im, cax, orientation="horizontal")
-        cbar.ax.xaxis.set_label_position("top")
-        cbar.ax.xaxis.set_ticks_position("top")
+        cax = divider.append_axes(pos, size="3%", pad=0)
+        cbar = fig.colorbar(im, cax, orientation=orientation)
+        cbar.ax.xaxis.set_label_position(pos)
+        cbar.ax.xaxis.set_ticks_position(pos)
 
         def format_func(x, pos):
             """
