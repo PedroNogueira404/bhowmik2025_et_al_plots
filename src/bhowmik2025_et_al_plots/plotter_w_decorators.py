@@ -88,7 +88,7 @@ def load_variables(
     # Ask user if they want to proceed with flux-ordered (PDF) output
     proceed = (
         input(
-            "\nDo you want to proceed with flux-ordered output as PDF files? [Y/n] (blank = True):\n"
+            "\nDo you want to proceed with flux-ordered output as PDF files? [Y/n] (blank=True):\n"
         )
         .strip()
         .lower()
@@ -142,8 +142,8 @@ def load_variables(
     sc_smooth = list(
         full_table[(full_table["Stage"] == 0) | (full_table["Stage"] == 1)]["field"]
     )
-    sc_fill_blank_model = ["odisea_c4_094a"]
-    sc_nomodel = ["odisea_c4_094b"]
+    sc_fill_blank_model = ["odisea_c4_094a", "odisea_c4_094b"]
+    sc_nomodel = [""]  # ["odisea_c4_094b"]
     special_cases = {
         "smooth": sc_smooth,
         "apply_1%": sc_newvmin,
@@ -481,18 +481,18 @@ def plotter(cfg: PlotConfig):
 
             plt.axvline(r_max, color="black", linestyle=":", lw=2.5, alpha=0.8)
             if isbinary == 1:
-                imax=0.1
+                imax = 0.1
                 plt.axhspan(0, imax, alpha=0.2, color="red")
                 plt.axhline(imax, color="black", linestyle=":", lw=2.5, alpha=0.8)
             elif name in cfg.special_cases["apply_1%"]:
-                imax=0.01
+                imax = 0.01
                 plt.axhspan(0, imax, alpha=0.2, color="red")
                 plt.axhline(imax, color="black", linestyle=":", lw=2.5, alpha=0.8)
             else:
-                imax=0.05
+                imax = 0.05
                 plt.axhspan(0, imax, alpha=0.2, color="red")
                 plt.axhline(imax, color="black", linestyle=":", lw=2.5, alpha=0.8)
-            plt.axvspan(r_max, right_limit, alpha=0.2, color="gray",hatch='/')
+            plt.axvspan(r_max, right_limit, alpha=0.2, color="gray", hatch="/")
             ax2.tick_params(axis="both", width=1, top=True, right=True, labelsize=14)
 
         #######################################################################################
