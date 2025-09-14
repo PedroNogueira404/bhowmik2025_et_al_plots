@@ -10,3 +10,5 @@ src/bhowmik2025_et_al_plots.egg-info/
 tests/*.csv
 tests/pdf_beam_scale_ordered
 tests/png_beam_scale
+tests/*.pdf
+tests/*.png
