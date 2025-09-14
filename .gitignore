@@ -12,3 +12,4 @@ tests/pdf_beam_scale_ordered
 tests/png_beam_scale
 tests/*.pdf
 tests/*.png
+tests/exoplanets_test.ipynb
