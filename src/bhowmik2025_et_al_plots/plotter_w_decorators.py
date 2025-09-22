@@ -229,6 +229,50 @@ def plotter(cfg: PlotConfig):
         )
 
         ########### Ax2 ######################################################
+        #-----------------------------------------------------------------------
+        # Function to calculate Rp while preserving rings
+        def Rp_au_preserve_rings(r_au, I_profile, p=0.95, eps_rel=0.210):
+            """
+            r_au: radius array (AU) – increasing
+            I_profile: surface-brightness (any units; normalization cancels)
+            p: enclosed-flux fraction (0.90 for R90, 0.95 for R95)
+            eps_rel: peak threshold to keep 'significant' rings (e.g. 8% of global peak)
+            """
+            r = np.asarray(r_au, float)
+            I = np.asarray(I_profile, float)
+            if np.any(np.diff(r) <= 0):
+                idx = np.argsort(r); r, I = r[idx], I[idx]
+
+            I = np.nan_to_num(I, nan=0.0)
+            I[I < 0] = 0.0
+
+            # ---- find last significant local maximum ----
+            Imax = I.max()
+            if Imax <= 0:
+                return np.nan
+            # local peaks
+            pk_mask = (I[1:-1] > I[:-2]) & (I[1:-1] > I[2:])
+            peaks = np.where(pk_mask)[0] + 1
+            if peaks.size == 0:
+                i_last = int(np.argmax(I))
+            else:
+                sig = peaks[I[peaks] >= eps_rel * Imax]   # keep peaks ≥ eps_rel * peak
+                i_last = int(sig[-1]) if sig.size else int(np.argmax(I))
+
+            # ---- suppress only beyond the last significant peak (keeps real ring) ----
+            J = I.copy()
+            if i_last + 1 < len(J):
+                J[i_last+1:] = np.minimum.accumulate(J[i_last+1:])
+
+            # ---- enclosed flux with proper annular weight (trapezoid) ----
+            ann = 2.0 * np.pi * r * J
+            cum = np.concatenate(([0.0], np.cumsum(0.5 * (ann[1:] + ann[:-1]) * np.diff(r))))
+            total = cum[-1]
+            if total <= 0:
+                return np.nan
+
+            return float(np.interp(p * total, cum, r))
+        #----------------------------------------------------------------------
         prof_data = np.loadtxt(profile_file, unpack=True)
         r_arcsec, flxx = prof_data[0], prof_data[1]
 
@@ -237,12 +281,15 @@ def plotter(cfg: PlotConfig):
         flxx /= flux_max  # np.nanmax(flxx)
         # thresh_norm_model = rms_model / flux_max
         r_au = r_arcsec * arc_to_au(dist)
+        # r_arcsec, flxx, distance_pc already defined
+        R90_au = Rp_au_preserve_rings(r_au, flxx, p=0.90)
+        R95_au = Rp_au_preserve_rings(r_au, flxx, p=0.95)
+        r_max = R95_au
+        # cumulative_flux = np.cumsum(flxx)
+        # cumulative_flux /= cumulative_flux[-1]
 
-        cumulative_flux = np.cumsum(flxx)
-        cumulative_flux /= cumulative_flux[-1]
-
-        r_limit_idx = np.argmax(cumulative_flux >= 0.95)
-        r_max = r_au[r_limit_idx]
+        # r_limit_idx = np.argmax(cumulative_flux >= 0.95)
+        # r_max = r_au[r_limit_idx]
 
         # Filter only the needed rows
         subset_features = cfg.features_data.loc[
