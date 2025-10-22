@@ -104,7 +104,7 @@ class AddPatches:
         asb = AnchoredSizeBar(
             self.ax.transData,
             size_arcsec / pixscale_arcsec_per_pix,
-            label=f"{size_au:.0f} + au",
+            label=f"{size_au:.0f}" + " au",
             loc=4,
             fontproperties=fontprops,
             pad=0.1,
@@ -157,7 +157,9 @@ class AddPatches:
             ),
         )
 
-    def add_colorbar(self, fig=None, im=None, pos = "top", orientation="horizontal") -> None:
+    def add_colorbar(
+        self, fig=None, im=None, pos="top", orientation="horizontal"
+    ) -> None:
         """
         Add_colorbar
 

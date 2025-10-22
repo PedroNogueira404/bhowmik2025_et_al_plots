@@ -24,9 +24,11 @@ def latex_images(images, doublecol: bool, folder, super_folder="pdf"):
     Returns:
         str: LaTeX code for the figure row.
     """
+    if "-" in folder:
+        folder = folder.replace("-", "_", 1)
     dclass = folder.rsplit("+")[0]
     dstage = folder.rsplit("+")[1]
-    
+
     im_file_lenght = len(images)
 
     if doublecol:

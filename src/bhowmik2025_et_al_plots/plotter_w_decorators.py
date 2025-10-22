@@ -137,7 +137,7 @@ def load_variables(
 
     subset = full_table[first_file:last_file]
     ####################################################################
-    ##add SPECIAL CASES
+    # adding SPECIAL CASES
     sc_newvmin = ["odisea_c4_41", "odisea_c4_143", "odisea_c4_51"]
     sc_smooth = list(
         full_table[(full_table["Stage"] == 0) | (full_table["Stage"] == 1)]["field"]
@@ -229,7 +229,7 @@ def plotter(cfg: PlotConfig):
         )
 
         ########### Ax2 ######################################################
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
         # Function to calculate Rp while preserving rings
         def Rp_au_preserve_rings(r_au, I_profile, p=0.95, eps_rel=0.210):
             """
@@ -241,7 +241,8 @@ def plotter(cfg: PlotConfig):
             r = np.asarray(r_au, float)
             I = np.asarray(I_profile, float)
             if np.any(np.diff(r) <= 0):
-                idx = np.argsort(r); r, I = r[idx], I[idx]
+                idx = np.argsort(r)
+                r, I = r[idx], I[idx]
 
             I = np.nan_to_num(I, nan=0.0)
             I[I < 0] = 0.0
@@ -256,23 +257,26 @@ def plotter(cfg: PlotConfig):
             if peaks.size == 0:
                 i_last = int(np.argmax(I))
             else:
-                sig = peaks[I[peaks] >= eps_rel * Imax]   # keep peaks ≥ eps_rel * peak
+                sig = peaks[I[peaks] >= eps_rel * Imax]  # keep peaks ≥ eps_rel * peak
                 i_last = int(sig[-1]) if sig.size else int(np.argmax(I))
 
             # ---- suppress only beyond the last significant peak (keeps real ring) ----
             J = I.copy()
             if i_last + 1 < len(J):
-                J[i_last+1:] = np.minimum.accumulate(J[i_last+1:])
+                J[i_last + 1 :] = np.minimum.accumulate(J[i_last + 1 :])
 
             # ---- enclosed flux with proper annular weight (trapezoid) ----
             ann = 2.0 * np.pi * r * J
-            cum = np.concatenate(([0.0], np.cumsum(0.5 * (ann[1:] + ann[:-1]) * np.diff(r))))
+            cum = np.concatenate(
+                ([0.0], np.cumsum(0.5 * (ann[1:] + ann[:-1]) * np.diff(r)))
+            )
             total = cum[-1]
             if total <= 0:
                 return np.nan
 
             return float(np.interp(p * total, cum, r))
-        #----------------------------------------------------------------------
+
+        # ----------------------------------------------------------------------
         prof_data = np.loadtxt(profile_file, unpack=True)
         r_arcsec, flxx = prof_data[0], prof_data[1]
 
