@@ -1,6 +1,6 @@
 """
 Module providing a the contents table used for the plotter
-function.
+function. 
 It takes table.csv and creates fits_files.csv, containing 202
 rows, with model and data paths, and a special collumn defining
 if the path is from a model or data;
