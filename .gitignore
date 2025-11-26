@@ -11,6 +11,6 @@ tests/*.csv
 tests/*.db
 tests/*.pdf
 tests/*.png
-tests/exoplanets_test.ipynb
+#tests/exoplanets_test.ipynb
 tests/pdf_beam_scale_ordered/
 tests/png_beam_scale/
