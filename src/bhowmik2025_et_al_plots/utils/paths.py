@@ -20,6 +20,7 @@ class PathUtils:
         # self.root = os.path.abspath(root) if root else os.path.abspath(".")
         self.input_dir = os.path.join(self.root, "input_files")
         self.fits_dir = os.path.join(self.input_dir, "fits_files")
+        self.data_res_dir = os.path.join(self.fits_dir, "spec_avg_data_residual")
         self.radial_prof_dir = os.path.join(self.input_dir, "frank_profiles")
         self.output_dir = os.path.join(self.root, "outputs")
         self.latex_dir = os.path.join(self.output_dir, "generated_figures_for_tex")
@@ -29,6 +30,7 @@ class PathUtils:
             f"PathUtils(root={self.root})\n"
             + f"Input Directory: {self.input_dir}\n"
             + f"FITS Directory: {self.fits_dir}\n"
+            + f"Data - Residuals Directory: {self.data_res_dir}\n"
             + f"Radial Profile Directory: {self.radial_prof_dir}\n"
             + f"Output Directory: {self.output_dir}\n"
             + f"LaTeX Directory: {self.latex_dir}"
