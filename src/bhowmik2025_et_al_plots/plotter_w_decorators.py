@@ -65,6 +65,7 @@ class PlotConfig:
     last_file: int
     delimiter: int
     dpi: int
+    data_res: bool
 
 
 def load_variables(
@@ -74,6 +75,7 @@ def load_variables(
     flux_ordered: bool = None,
     dpi_pdf: int = 600,
     dpi_png: int = 100,
+    data_res: bool = True,
 ) -> dict:
     """Function to load all the variables to be used in the main plotter() function"""
     csv_features: str = (
@@ -167,6 +169,7 @@ def load_variables(
         delimiter=delimiter,
         dpi=dpi,
         special_cases=special_cases,
+        data_res=data_res,
     )
 
 

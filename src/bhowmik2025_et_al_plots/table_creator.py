@@ -1,6 +1,6 @@
 """
 Module providing a the contents table used for the plotter
-function. 
+function.
 It takes table.csv and creates fits_files.csv, containing 202
 rows, with model and data paths, and a special collumn defining
 if the path is from a model or data;
@@ -31,7 +31,10 @@ def creating_tables(verbose: bool = False, debug: bool = False) -> None:
         raise FileNotFoundError(
             f"The specified directory does not exist: {paths.fits_dir}"
         )
-
+    if not os.path.exists(paths.data_res_dir):
+        raise FileNotFoundError(
+            f"The specified directory does not exist: {paths.data_res_dir}"
+        )
     # Create a pandas dataframe of all .fits files in the directory,
     # with their full paths
 
@@ -73,7 +76,7 @@ def creating_tables(verbose: bool = False, debug: bool = False) -> None:
             )
             # COUNTER += 1
 
-    rows_rad = []
+    rows_rad: list = []
 
     for file_rad in os.listdir(paths.radial_prof_dir):
         if file_rad.endswith(".txt"):
@@ -92,8 +95,41 @@ def creating_tables(verbose: bool = False, debug: bool = False) -> None:
             #############################################################
 
             source = "_".join(source_list)
-            path = os.path.join(paths.radial_prof_dir, file_rad)
-            rows_rad.append({"field_rad": source, "path_rad": path})
+            path_rad = os.path.join(paths.radial_prof_dir, file_rad)
+        rows_rad.append({"field_rad": source, "path_rad": path_rad})
+
+    rows_data_res: list = []
+    for counter, file_data_res in enumerate(os.listdir(paths.data_res_dir)):
+        if file_data_res.endswith(".fits"):
+            # has_spec_avg_data: str = "data" in file
+
+            has_resid: str = "residual" in file_data_res
+            isres: bool = True if has_resid else False
+
+            has_odisea: str = "ODISEA" in file_data_res
+            has_ra: str = "RA" in file_data_res
+
+            ### YOU NEED TO CHECK IF THE NEXT CONDITIONS ARE CORRECT BY
+            ### COMPARING THE TABLES (NUMBER OF ROWS)####
+            if has_odisea:
+                source_list: list = re.split(r"[_]+", file_data_res)[0:3]
+            elif has_ra:
+                source_list: list = re.split(r"[_]+", file_data_res)[0:1]
+            else:
+                source_list: list = re.split(r"[_]+", file_data_res)[0:2]
+            #############################################################
+
+            source = "_".join(source_list)
+            # path = os.path.join(paths.fits_dir, file)
+            rows_data_res.append(
+                {
+                    # "id": counter,
+                    "field_res": source,
+                    "is res": isres,
+                    "path_data_res": os.path.join(paths.data_res_dir, file_data_res),
+                }
+            )
+            # COUNTER += 1
 
     ######### Create a pandas dataframe with the rows ###################
     ##### rows = [{"id":dummy-counter ,"field": source, "is model": bolean,
@@ -102,7 +138,13 @@ def creating_tables(verbose: bool = False, debug: bool = False) -> None:
     table = pd.merge(
         table, pd.DataFrame(rows_rad), left_on="field", right_on="field_rad"
     ).drop("field_rad", axis=1)
-
+    print(table.head(), "\n")
+    table = pd.merge(
+        table,
+        pd.DataFrame(rows_data_res),
+        left_on=["field", "is model"],
+        right_on=["field_res", "is res"],
+    ).drop("field_res", axis=1)
     # Sorting, fixing indexes, fixing "field" problems
     table = table.sort_values(by=["field"])
     table = table.reset_index(drop=True)
@@ -251,6 +293,7 @@ def creating_tables(verbose: bool = False, debug: bool = False) -> None:
 if __name__ == "__main__":
     print(f"\nRunning {__file__.rsplit('/',maxsplit=1)[-1]} directly\n")
     creating_tables(verbose=True, debug=False)
+
 
 def main():
     print(f"\nRunning {__file__.rsplit('/',maxsplit=1)[-1]} directly\n")
