@@ -148,32 +148,49 @@ def creating_tables(verbose: bool = False, debug: bool = False) -> None:
     # Sorting, fixing indexes, fixing "field" problems
     table = table.sort_values(by=["field"])
     table = table.reset_index(drop=True)
-    table["id"] = table.index
+    # table["id"] = table.index
     table["field"] = table["field"].str.strip().str.lower()
     ##########################################################
     # Creating a data and model identical tables to merge them again
     # keeping path of data and model in the same lines of full_table
-    table_realdata_nomodelcol = (
-        table[table["is model"] == False]
-        .drop("is model", axis=1)
+
+    # table_realdata_nomodelcol = (
+    #     table[table["is model"] == False]
+    #     .drop("is model", axis=1)
+    #     .reset_index(drop=True)
+    # )
+    # table_realdata_nomodelcol["id"] = table_realdata_nomodelcol.index
+    ### Creating the real data table ####
+    table_realdata = (
+        table[(~table["is model"]) & (~table["is res"])]
+        .drop(columns=["is model", "is res", "id"])
         .reset_index(drop=True)
     )
-    table_realdata_nomodelcol["id"] = table_realdata_nomodelcol.index
-    table_model_nomodelcol = (
-        table[table["is model"] == True].drop("is model", axis=1).reset_index(drop=True)
+    # table_realdata["id"] = table_realdata.index
+    table_realdata = table_realdata.rename(
+        columns={"path": "path_data", "path_data_res": "path_avg_data"}
     )
-    table_model_nomodelcol["id"] = table_model_nomodelcol.index
-    table_model_nomodelcol = table_model_nomodelcol.rename(
-        columns={"path": "path_model"}
+    #### Creating the model table ####
+    table_model = (
+        table[table["is model"] & table["is res"]]
+        .drop(columns=["is model", "is res", "id"])
+        .reset_index(drop=True)
     )
+    # table_model["id"] = table_model.index
+    table_model = table_model.rename(
+        columns={"path": "path_model", "path_data_res": "path_residual"}
+    )
+    # table_model = table_model.rename(
+    #     columns={"path": "path_model"}
+    # )
     #### IMPORTANT: table_nomodelcol is the full table predecessor,
     # before merging with the table Trisha gave me
     # Dont make confusion!!
     table_nomodelcol = pd.merge(
-        table_realdata_nomodelcol,
-        table_model_nomodelcol,
-        left_on=("field", "id", "path_rad"),
-        right_on=("field", "id", "path_rad"),
+        table_realdata,
+        table_model,
+        left_on=("field", "path_rad"),
+        right_on=("field", "path_rad"),
         validate="1:1",
     )
     #####################################################################
@@ -188,24 +205,24 @@ def creating_tables(verbose: bool = False, debug: bool = False) -> None:
     #####################################################################
 
     ########## Debugging mismatches! #####################
-    # Find rows in table_realdata_nomodelcol that do not have a match
+    # Find rows in table_realdata that do not have a match
     # in table_sizes
     not_in_sizes = table_nomodelcol.merge(
-        table_sizes, on=["id", "field"], how="left", indicator=True
+        table_sizes, on=["field"], how="left", indicator=True
     ).query('_merge == "left_only"')
 
     # Find rows in table_sizes that do not have a match in
-    # table_realdata_nomodelcol
+    # table_realdata
     not_in_realdata = table_sizes.merge(
-        table_nomodelcol, on=["id", "field"], how="left", indicator=True
+        table_nomodelcol, on=["field"], how="left", indicator=True
     ).query('_merge == "left_only"')
 
     if debug:
 
-        print("Rows in table_realdata_nomodelcol not in table_sizes:")
+        print("Rows in table_realdata not in table_sizes:")
         print(not_in_sizes)
 
-        print("\nRows in table_sizes not in table_realdata_nomodelcol:")
+        print("\nRows in table_sizes not in table_realdata:")
         print(not_in_realdata)
 
     ########## Merge the two tables ##############################
@@ -216,13 +233,25 @@ def creating_tables(verbose: bool = False, debug: bool = False) -> None:
         full_table = pd.merge(
             table_nomodelcol,
             table_sizes,
-            left_on=("field", "id"),
-            right_on=("field", "id"),
+            left_on=("field"),
+            right_on=("field"),
             validate="1:1",
         )
     else:
         logger.error("Mismatch found in sizes or realdata. Aborting merge.")
         raise ValueError("Mismatch found in sizes or realdata. Aborting merge.")
+
+    table_nomodelcol.to_csv(f"{paths.input_dir}/table_paths.csv", index=False)
+    logger.info("Saved table_paths.csv successfully!")
+    if verbose:
+        print(
+            50 * "#",
+            "\n",
+            "Saved table_paths.csv successfully!",
+            table_nomodelcol.info(verbose=verbose),
+            "\n",
+            50 * "#",
+        )
     #####################################################################
 
     ####Now fix the center_x and center_y for using of astropy before exporting
@@ -249,23 +278,23 @@ def creating_tables(verbose: bool = False, debug: bool = False) -> None:
     full_table["Group"] = full_table["Stage"].astype(str) + "+" + full_table["Class"]
     full_table["Group"] = full_table["Group"].str.strip()
 
-    table.to_csv(f"{paths.input_dir}/fits_files.csv", index=False)
-    logger.info("Saved table.csv successfully!")
-    if verbose:
+    # table.to_csv(f"{paths.input_dir}/fits_files.csv", index=False)
+    # logger.info("Saved table.csv successfully!")
+    # if verbose:
 
-        print(
-            50 * "#",
-            "\n",
-            "Saved table.csv successfully!",
-            table.info(verbose=verbose),
-            "\n",
-            50 * "#",
-        )
-    # else:
     #     print(
     #         50 * "#",
     #         "\n",
     #         "Saved table.csv successfully!",
+    #         table.info(verbose=verbose),
+    #         "\n",
+    #         50 * "#",
+    #     )
+    # else:
+    #     print(
+    #         50 * "#",
+    #         "\n",
+    #         "Saved full_table.csv successfully!",
     #         "\n",
     #         50 * "#",
     #     )
