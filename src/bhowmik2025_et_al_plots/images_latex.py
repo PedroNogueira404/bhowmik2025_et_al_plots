@@ -15,6 +15,19 @@ pdf_dir = os.path.join(paths.output_dir, "pdf")
 data_res_dir = os.path.join(paths.output_dir, "avg_data_residual")
 groups = full_table["Group"].unique()
 
+# def group_key(s):
+#     num = int(s.split('+')[0])
+#     priority = 0 if s.split('+')[1] == 'I_F' else 1
+#     return num, priority
+
+# groups_sorted = sorted(groups, key=group_key)
+#### The same as above is done in a single line below
+groups_sorted = groups_sorted = sorted(
+    groups, key=lambda s: (int(s.split("+")[0]), 0 if s.split("+")[1] == "I_F" else 1)
+)
+
+print(groups_sorted)
+
 
 def latex_images(images, doublecol: bool, folder, super_folder=None):
     """
@@ -205,35 +218,57 @@ def generate_all_latex_figures(cfg: GridConfig) -> None:
                             super_folder=super_folder,
                         )
                     )
-                super_folder = "pdf"
+                super_folder = "pdf"  # going back to pdf for main file
 
-                with open(
-                    f"{paths.output_dir}/all_data_res_figures.tex",
-                    "a",
-                    encoding="utf-8",
-                ) as k:
-                    k.write(
-                        "\\input{"
-                        + "generated_figures_for_tex"
-                        + "/"
-                        + f"{group}"
-                        + "_data_res_figures}\n"
-                    )
-                k.close()
+                # with open(
+                #     f"{paths.output_dir}/all_data_res_figures.tex",
+                #     "a",
+                #     encoding="utf-8",
+                # ) as k:
+                #     k.write(
+                #         "\\input{"
+                #         + "generated_figures_for_tex"
+                #         + "/"
+                #         + f"{group}"
+                #         + "_data_res_figures}\n"
+                #     )
+                # k.close()
 
             ## Generating a main latex file in case You want all the grids in sequence
             ## Also good for modifying any configuration in Latex and debugging
-            with open(
-                f"{paths.output_dir}/all_figures.tex", "a", encoding="utf-8"
-            ) as g:
-                g.write(
-                    "\\input{"
-                    + "generated_figures_for_tex"
-                    + "/"
-                    + f"{group}"
-                    + "_generated_figures}\n"
-                )
-            g.close()
+            # with open(
+            #     f"{paths.output_dir}/all_figures.tex", "a", encoding="utf-8"
+            # ) as g:
+            #     g.write(
+            #         "\\input{"
+            #         + "generated_figures_for_tex"
+            #         + "/"
+            #         + f"{group}"
+            #         + "_generated_figures}\n"
+            #     )
+            # g.close()
+    for group in groups_sorted:
+        with open(
+            f"{paths.output_dir}/all_data_res_figures.tex", "a", encoding="utf-8"
+        ) as k, open(f"{paths.output_dir}/all_figures.tex", "a", encoding="utf-8") as g:
+
+            k.write(
+                "\\input{"
+                + "generated_figures_for_tex"
+                + "/"
+                + f"{group}"
+                + "_data_res_figures}\n"
+            )
+
+            g.write(
+                "\\input{"
+                + "generated_figures_for_tex"
+                + "/"
+                + f"{group}"
+                + "_generated_figures}\n"
+            )
+        k.close()
+        g.close()
 
     # else:
     #     logger.error(
