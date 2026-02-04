@@ -56,6 +56,7 @@ class PlotConfig:
     subset: pd.DataFrame
     index_to_groups: dict
     im_type: str
+    data_res_type: str
     verbose: bool
     flux_ordered: bool
     smooth: bool
@@ -104,6 +105,7 @@ def load_variables(
     # Now set parameters based on the user's choice
     if flux_ordered:
         _im_type = "pdf"
+        _data_res_type = "avg_data_residual"
         full_table = full_table.sort_values("B8_Flux")
         dpi = dpi_pdf
     else:
@@ -116,6 +118,26 @@ def load_variables(
         _im_type,
         dpi,
     )
+    data_res_choice = (
+        input(
+            "\n Do you want to proceed to set the data - residual output options? [Y/n] (blank=True):\n"
+        )
+        .strip()
+        .lower()
+    )
+    if data_res_choice in ["", "y", "yes"]:
+        data_res = True
+    else:
+        data_res = False
+
+    if data_res:
+        _data_res_type = "avg_data_residual"
+        logger.info(
+            "data_res was set to %s, and data - residual files will be saved as %s with %s dpi",
+            data_res,
+            _data_res_type,
+            dpi,
+        )
 
     first_file_input = input("\n Start index (blank = 0): ")
     last_file_input = input("End index (blank or 'None' = no end):")
@@ -160,6 +182,7 @@ def load_variables(
         subset=subset,
         index_to_groups=index_to_groups,
         im_type=_im_type,
+        data_res_type=_data_res_type,
         verbose=verbose,
         flux_ordered=flux_ordered,
         smooth=smooth,
@@ -203,9 +226,11 @@ def plotter(cfg: PlotConfig):
         if count > cfg.delimiter:
             break
 
-        i = row.path
+        i = row.path_data
         j = row.path_model
         profile_file = row.path_rad
+        path_avg_data = row.path_avg_data
+        path_res = row.path_residual
         name = row.field
         r_frank = row.Rmax_frank
         cen_x_sex = row.center_x
@@ -572,6 +597,140 @@ def plotter(cfg: PlotConfig):
             plt.close()
 
         yield count
+
+        if cfg.data_res:
+            with fits.open(path_avg_data) as hdul_avg_data, fits.open(
+                path_res
+            ) as hdul_residual:
+
+                ############ Reading the FITS files ##############
+                if cfg.verbose:
+                    print("\n", 50 * "#")
+                    # print(f"\n Processing {count}, of source id {disk_id} \n: {i} \n ")
+                    logger.info(
+                        f"Data - Residual Processing {count}, of source id {disk_id}: {i}"
+                    )
+
+                # Extracting header and data from the FITS files
+                header_avg_data = hdul_avg_data[0].header
+                data_avg_data = hdul_avg_data[0].data
+
+                header_residual = hdul_residual[0].header
+                data_residual = hdul_residual[0].data
+            ########################################
+            # Loading wcs
+            pixel_scale_avg_data: float = (
+                header_avg_data["CDELT2"] * 3600
+            )  # in arcsec / pixel
+            pixel_scale_residual: float = (
+                header_residual["CDELT2"] * 3600
+            )  # in arcsec / pixel
+            wcs = WCS(header_avg_data)
+
+            # imsize_radius_model_arcsec: float = r_zoom  # in arcsec
+
+            # imsize_model_pix: float = header_model["NAXIS1"]  # in pix
+            imsize_radius_avg_data_pix = r_zoom / pixel_scale_avg_data  # in pix
+            imsize_radius_residual_pix = r_zoom / pixel_scale_residual  # in pix
+            boxsize_au = (
+                np.round((r_zoom * 2) * arc_to_au(dist), -1) / cfg.zoom_factor
+            )  # Value -1 corresponds to rounding to the nearest 10 au
+
+            ########################################
+
+            fig_data_res = plt.figure(figsize=(10, 5), layout="constrained")
+
+            #################### AX0 - AVG DATA #################################################
+            ax3 = plt.subplot(121)
+
+            mask = np.isfinite(data_avg_data)
+            vmin = np.min(data_avg_data[mask])
+            vmax = np.max(data_avg_data[mask])
+
+            im3 = ax3.imshow(
+                data_avg_data,
+                origin="lower",
+                cmap="turbo",
+                aspect="equal",
+                vmin=vmin,
+                vmax=vmax,
+            )
+
+            # Label
+            plt.xlabel(r"$\Delta$RA (au)", fontsize=16, fontweight="bold")
+            plt.ylabel(r"$\Delta$DEC (au)", fontsize=16, fontweight="bold")
+
+            # Limits
+            ax3.set_xlim(
+                center_ra_pix - (imsize_radius_avg_data_pix) / cfg.zoom_factor,
+                center_ra_pix + (imsize_radius_avg_data_pix) / cfg.zoom_factor,
+            )
+            ax3.set_ylim(
+                center_dec_pix - (imsize_radius_avg_data_pix) / cfg.zoom_factor,
+                center_dec_pix + (imsize_radius_avg_data_pix) / cfg.zoom_factor,
+            )
+
+            ## Fixing ticks (pix) and labels (au) ###
+            ticks_and_labels_ax3 = ft(boxsize_au, ax0=ax3)
+            ticks_and_labels_ax3.set_myticks(
+                dist, pixel_scale_avg_data, center_ra_pix, center_dec_pix
+            )
+            ##################################################
+            ## Adding patches ###
+            patcher_ax3 = AddPatches(ax3)
+            # patcher_ax3.add_beam(bmaj, bmin, bpa, pixel_scale_data)
+            patcher_ax3.add_name_text(name=name)
+            patcher_ax3.add_type_text(text="Data")
+            # patcher_ax3.add_flux_text(flux=b8_flux)
+            patcher_ax3.add_colorbar(fig_data_res, im3, cbarlabel=True)
+
+            ax4 = plt.subplot(122)
+            im4 = ax4.imshow(
+                data_residual,
+                origin="lower",
+                cmap="turbo",
+                aspect="equal",
+                vmin=vmin,
+                vmax=vmax,
+            )
+            ## Fixing ticks (pix) and labels (au) ###
+            ticks_and_labels_ax4 = ft(boxsize_au, ax0=ax4)
+            ticks_and_labels_ax4.set_myticks(
+                dist, pixel_scale_residual, center_ra_pix, center_dec_pix
+            )
+
+            ax4.set_xlim(
+                center_ra_pix - (imsize_radius_residual_pix) / cfg.zoom_factor,
+                center_ra_pix + (imsize_radius_residual_pix) / cfg.zoom_factor,
+            )
+            ax4.set_ylim(
+                center_dec_pix - (imsize_radius_residual_pix) / cfg.zoom_factor,
+                center_dec_pix + (imsize_radius_residual_pix) / cfg.zoom_factor,
+            )
+            plt.xlabel(r"$\Delta$RA (au)", fontsize=16, fontweight="bold")
+            plt.ylabel(r"$\Delta$DEC (au)", fontsize=16, fontweight="bold")
+            patcher_ax4 = AddPatches(ax4)
+            patcher_ax4.add_type_text(text="Residual")
+
+            ax3.set_box_aspect(1)
+            ax4.set_box_aspect(1)
+
+            data_res_name = f"{count:03d}_{name}_data_residual.pdf"
+            for group in cfg.index_to_groups.get(disk_id, []):
+                save_dir = os.path.join(
+                    paths.output_dir, cfg.data_res_type + "/" + group
+                )
+                os.makedirs(save_dir, exist_ok=True)
+                save_path = os.path.join(save_dir, data_res_name)
+                plt.savefig(save_path, bbox_inches="tight", dpi=cfg.dpi)
+
+                if cfg.verbose:
+                    print(
+                        f"Data Residual Image saved as {data_res_name} in: \n {save_path}"
+                    )
+                    print(50 * "#")
+
+                plt.close()
 
 
 if __name__ == "__main__":

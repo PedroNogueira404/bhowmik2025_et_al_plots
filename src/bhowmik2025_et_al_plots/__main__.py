@@ -103,8 +103,9 @@ def main(reverse: bool = True) -> None:
         flux_ordered=None,
         dpi_png=100,
         dpi_pdf=600,
+        data_res=None,
     )
-    #         data_rad=True,
+    #
     plotter_w_decorators.plotter(cfg)
 
     if cfg.flux_ordered:

@@ -137,6 +137,26 @@ class AddPatches:
             ),
         )
 
+    def add_type_text(self, text=None) -> None:
+        """_summary_"""
+        return self.ax.text(
+            0.78,
+            0.11,
+            s=text.upper(),
+            transform=self.ax.transAxes,
+            fontsize=16,
+            ha="center",
+            va="top",
+            color="black",
+            fontweight="bold",
+            bbox=dict(
+                facecolor="white",
+                edgecolor="red",
+                boxstyle="round,pad=0.2",
+                alpha=0.9,
+            ),
+        )
+
     def add_flux_text(self, flux=None) -> None:
         """_summary_"""
         return self.ax.text(
@@ -158,7 +178,7 @@ class AddPatches:
         )
 
     def add_colorbar(
-        self, fig=None, im=None, pos="top", orientation="horizontal"
+        self, fig=None, im=None, pos="top", orientation="horizontal", cbarlabel=False
     ) -> None:
         """
         Add_colorbar
@@ -173,6 +193,8 @@ class AddPatches:
         cbar = fig.colorbar(im, cax, orientation=orientation)
         cbar.ax.xaxis.set_label_position(pos)
         cbar.ax.xaxis.set_ticks_position(pos)
+        if cbarlabel:
+            cbar.set_label("mJy beam$^{-1}$", fontsize=15, fontweight="bold")
 
         def format_func(x, pos):
             """
