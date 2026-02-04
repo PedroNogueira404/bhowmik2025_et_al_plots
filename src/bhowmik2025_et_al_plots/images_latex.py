@@ -12,10 +12,11 @@ paths = PathUtils()
 full_table = pd.read_csv(f"{paths.input_dir}/full_table.csv", index_col=False)
 
 pdf_dir = os.path.join(paths.output_dir, "pdf")
+data_res_dir = os.path.join(paths.output_dir, "avg_data_residual")
 groups = full_table["Group"].unique()
 
 
-def latex_images(images, doublecol: bool, folder, super_folder="pdf"):
+def latex_images(images, doublecol: bool, folder, super_folder=None):
     """
     Generate a LaTeX string for a row of up to 2 images as minipages.
     Args:
@@ -110,9 +111,10 @@ def latex_images(images, doublecol: bool, folder, super_folder="pdf"):
 class GridConfig:
     reverse: bool
     doublecolumns: bool
+    data_res: bool
 
 
-def load_variables_grid(reverse: bool = True) -> GridConfig:
+def load_variables_grid(reverse: bool = True, data_res: bool = True) -> GridConfig:
     singlecolumn = (
         input(
             "⚠️  Type 'y' or 'yes' use single column format on your grids. Anything else will cancel:\n"
@@ -127,7 +129,7 @@ def load_variables_grid(reverse: bool = True) -> GridConfig:
         doublecol = True
         logger.info("Double column format enabled for LaTeX grids.")
 
-    return GridConfig(reverse=reverse, doublecolumns=doublecol)
+    return GridConfig(reverse=reverse, doublecolumns=doublecol, data_res=data_res)
 
 
 def generate_all_latex_figures(cfg: GridConfig) -> None:
@@ -146,6 +148,9 @@ def generate_all_latex_figures(cfg: GridConfig) -> None:
     os.makedirs(paths.latex_dir)
 
     if os.path.exists(pdf_dir):
+        if os.path.exists(os.path.join(paths.output_dir, "all_data_res_figures.tex")):
+            os.remove(os.path.join(paths.output_dir, "all_data_res_figures.tex"))
+        super_folder = "pdf"
         if cfg.reverse:
             # print("The files are ordered in decreasing flux order in latex files")
             logger.info("The files are ordered in decreasing flux order in latex files")
@@ -174,8 +179,48 @@ def generate_all_latex_figures(cfg: GridConfig) -> None:
                         images=pdf_files,
                         folder=group.replace("_", "-") if "_" in group else group,
                         doublecol=cfg.doublecolumns,
+                        super_folder=super_folder,
                     )
                 )
+
+            if os.path.exists(data_res_dir) and cfg.data_res:
+                super_folder = "avg_data_residual"
+                logger.info("Generating tex grid for data - residual images")
+                group_path = os.path.join(data_res_dir, group)
+                pdf_files = sorted(
+                    os.listdir(f"{data_res_dir}/{group}"), reverse=cfg.reverse
+                )
+
+                ## Generating latex grid files per group
+                with open(
+                    f"{paths.latex_dir}/{group}_data_res_figures.tex",
+                    mode="w",
+                    encoding="utf-8",
+                ) as f:
+                    f.write(
+                        latex_images(
+                            images=pdf_files,
+                            folder=group.replace("_", "-") if "_" in group else group,
+                            doublecol=cfg.doublecolumns,
+                            super_folder=super_folder,
+                        )
+                    )
+                super_folder = "pdf"
+
+                with open(
+                    f"{paths.output_dir}/all_data_res_figures.tex",
+                    "a",
+                    encoding="utf-8",
+                ) as k:
+                    k.write(
+                        "\\input{"
+                        + "generated_figures_for_tex"
+                        + "/"
+                        + f"{group}"
+                        + "_data_res_figures}\n"
+                    )
+                k.close()
+
             ## Generating a main latex file in case You want all the grids in sequence
             ## Also good for modifying any configuration in Latex and debugging
             with open(
@@ -188,14 +233,15 @@ def generate_all_latex_figures(cfg: GridConfig) -> None:
                     + f"{group}"
                     + "_generated_figures}\n"
                 )
+            g.close()
 
-    else:
-        logger.error(
-            "The latex grid files were not created, please rerun the plotting / main function setting the output as pdfs"
-        )
-        raise FileNotFoundError(
-            "No directory called pdf, please rerun the plotting / main function setting the output as pdfs"
-        )
+    # else:
+    #     logger.error(
+    #         "The latex grid files were not created, please rerun the plotting / main function setting the output as pdfs"
+    #     )
+    #     raise FileNotFoundError(
+    #         "No directory called pdf, please rerun the plotting / main function setting the output as pdfs"
+    #     )
     # print("Latex grid files generated!!")
     logger.info("Latex grid files generated!!\n" + 50 * "#")
 

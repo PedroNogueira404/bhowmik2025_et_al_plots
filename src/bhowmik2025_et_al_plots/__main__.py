@@ -110,9 +110,12 @@ def main(reverse: bool = True) -> None:
 
     if cfg.flux_ordered:
         reverse = True
-    cfg_latex = images_latex.load_variables_grid(reverse=reverse)
+    cfg_latex = images_latex.load_variables_grid(reverse=reverse, data_res=cfg.data_res)
 
     images_latex.generate_all_latex_figures(cfg=cfg_latex)
+    if cfg.data_res:
+        images_latex.generate_all_latex_figures(cfg=cfg_latex)
+        # images_latex.generate_all_latex_data_residual_figures(cfg=cfg_latex)
 
 
 if __name__ == "__main__":
