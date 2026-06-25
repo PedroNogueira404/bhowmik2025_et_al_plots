@@ -10,6 +10,7 @@ import logging
 
 from bhowmik2025_et_al_plots import table_creator
 from bhowmik2025_et_al_plots import plotter_w_decorators
+from bhowmik2025_et_al_plots import plotter_w_decorators_w_residuals
 from bhowmik2025_et_al_plots import images_latex
 
 from bhowmik2025_et_al_plots.utils import PathUtils
@@ -96,17 +97,25 @@ def main(reverse: bool = True) -> None:
     #     doublecol = True
     #     logger.info("Double column format enabled for LaTeX grids.")
 
-    cfg = plotter_w_decorators.load_variables(
+    cfg =    plotter_w_decorators_w_residuals.load_variables(
         verbose=False,
         _zoom_factor=1,
-        smooth=False,
-        flux_ordered=None,
+        smooth=True,
+        flux_ordered=True,
         dpi_png=100,
         dpi_pdf=600,
         data_res=None,
     )
+    # plotter_w_decorators_w_residuals.load_variables(        verbose=False,        _zoom_factor=1,
+    #     smooth=False,
+    #     flux_ordered=None,
+    #     dpi_png=100,
+    #     dpi_pdf=600,
+    #     data_res=None,
+    # # )
     #
-    plotter_w_decorators.plotter(cfg)
+    # plotter_w_decorators.plotter(cfg)
+    plotter_w_decorators_w_residuals.plotter(cfg)
 
     if cfg.flux_ordered:
         reverse = True

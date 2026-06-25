@@ -127,7 +127,7 @@ class GridConfig:
     data_res: bool
 
 
-def load_variables_grid(reverse: bool = True, data_res: bool = True) -> GridConfig:
+def load_variables_grid(reverse: bool = True, data_res: bool = False) -> GridConfig:
     singlecolumn = (
         input(
             "⚠️  Type 'y' or 'yes' use single column format on your grids. Anything else will cancel:\n"
@@ -163,7 +163,7 @@ def generate_all_latex_figures(cfg: GridConfig) -> None:
     if os.path.exists(pdf_dir):
         if os.path.exists(os.path.join(paths.output_dir, "all_data_res_figures.tex")):
             os.remove(os.path.join(paths.output_dir, "all_data_res_figures.tex"))
-        super_folder = "pdf"
+        super_folder = "pdf_new"
         if cfg.reverse:
             # print("The files are ordered in decreasing flux order in latex files")
             logger.info("The files are ordered in decreasing flux order in latex files")
@@ -218,7 +218,7 @@ def generate_all_latex_figures(cfg: GridConfig) -> None:
                             super_folder=super_folder,
                         )
                     )
-                super_folder = "pdf"  # going back to pdf for main file
+                super_folder = "pdf_new"  # going back to pdf for main file
 
                 # with open(
                 #     f"{paths.output_dir}/all_data_res_figures.tex",

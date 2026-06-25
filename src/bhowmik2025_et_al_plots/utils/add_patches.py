@@ -186,10 +186,12 @@ class AddPatches:
         """
         import matplotlib.pyplot as plt
         from mpl_toolkits.axes_grid1 import make_axes_locatable
+        import numpy as np
 
         ax = self.ax
         divider = make_axes_locatable(ax)
         cax = divider.append_axes(pos, size="3%", pad=0)
+        im.set_clim(vmax=np.nanmax(im.get_array()))
         cbar = fig.colorbar(im, cax, orientation=orientation)
         cbar.ax.xaxis.set_label_position(pos)
         cbar.ax.xaxis.set_ticks_position(pos)

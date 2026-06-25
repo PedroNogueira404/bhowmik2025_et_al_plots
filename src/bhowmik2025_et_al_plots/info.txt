@@ -1,0 +1,10 @@
+testar com 97 a 98
+7 a 8 é o 193.
+
+CDELT2 -> = residual e/ou spec_avg_data -> 5.555555555556E-06	
+CDELT2 menor de data original -> 2.777777777778E-06	
+
+RADESYS -> = spec_avg e residual -> ICRS
+RADESYS -> data original era FK5 
+
+uM O PATCHER TA ANTES DE ALGO (AX1 OU AX2 ) O QUE É OPOTOS DO PRIMEIRO, TALVEZ INTERFIRA COM OS TICKSB

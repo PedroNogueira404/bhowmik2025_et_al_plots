@@ -1,5 +1,5 @@
 """
-Functions to make all the plots based on the input collumns of full_table,
+Functions to make all the plots based on the input columns of full_table,
 created with table_creator.py, feature labels given by gap_ring_infl_pt.csv and
 frank_profiles
 """
@@ -257,7 +257,7 @@ def plotter(cfg: PlotConfig):
             equinox="J2000.0",
         )
 
-        ########### Ax2 ######################################################
+        ########### ax3 ######################################################
         # -----------------------------------------------------------------------
         # Function to calculate Rp while preserving rings
         def Rp_au_preserve_rings(r_au, I_profile, p=0.95, eps_rel=0.210):
@@ -307,11 +307,12 @@ def plotter(cfg: PlotConfig):
 
         # ----------------------------------------------------------------------
         prof_data = np.loadtxt(profile_file, unpack=True)
-        r_arcsec, flxx = prof_data[0], prof_data[1]
+        r_arcsec, flxx,err_flxx = prof_data[0], prof_data[1],prof_data[2]
 
         # Normalize the flux
         flux_max = np.nanmax(flxx)
         flxx /= flux_max  # np.nanmax(flxx)
+        err_flxx /= flux_max
         # thresh_norm_model = rms_model / flux_max
         r_au = r_arcsec * arc_to_au(dist)
         # r_arcsec, flxx, distance_pc already defined
@@ -331,7 +332,11 @@ def plotter(cfg: PlotConfig):
 
         ##########################################################################
 
-        with fits.open(i) as hdul_data, fits.open(j) as hdul_model:
+        # with fits.open(i) as hdul_data, fits.open(j) as hdul_model:
+        # Before (plotter_w_decorators) I was reading data from the input files but now I want from spec_avg_data directory
+        with fits.open(i) as hdul_data, fits.open(j) as hdul_model, fits.open(
+            path_avg_data
+        ) as hdul_avg_data, fits.open(path_res) as hdul_residual:
 
             ############ Reading the FITS files ##############
             if cfg.verbose:
@@ -342,49 +347,63 @@ def plotter(cfg: PlotConfig):
             # count += 1
 
             # Extracting header and data from the FITS files
-            header_data = hdul_data[0].header
-            data_data = hdul_data[0].data
+
+            header_avg_data = hdul_avg_data[0].header
+            data_avg_data = hdul_avg_data[0].data
+
+            header_residual = hdul_residual[0].header
+            data_residual = hdul_residual[0].data
 
             header_model = hdul_model[0].header
             data_model = hdul_model[0].data
 
         ########################################
         # Loading wcs
-        pixel_scale_data: float = header_data["CDELT2"] * 3600  # in arcsec / pixel
+        pixel_scale_avg_data: float = (
+            header_avg_data["CDELT2"] * 3600
+        )  # in arcsec / pixel
         pixel_scale_model = r_frank * 2 / header_model["NAXIS1"]  # in arcsec / pixel
-        wcs = WCS(header_data)
+        pixel_scale_residual: float = (
+            header_residual["CDELT2"] * 3600
+        )  # in arcsec / pixel
+        wcs = WCS(header_avg_data)
 
         # Defining centers
         center_ra_deg, center_dec_deg = coord.ra.deg, coord.dec.deg
         center_ra_pix, center_dec_pix = wcs.all_world2pix(
             center_ra_deg, center_dec_deg, 0
         )
-        ########################################
+        #######################################
         # Definying total boxsize and few more parameters
         # In case you want to apply a zoom factor manually
 
-        imsize_radius_model_arcsec: float = r_zoom  # in arcsec
+        # imsize_radius_model_arcsec: float = r_zoom  # in arcsec
         imsize_model_pix: float = header_model["NAXIS1"]  # in pix
-        imsize_radius_data_pix = imsize_radius_model_arcsec / pixel_scale_data  # in pix
-        imsize_radius_model_pix = (
-            imsize_radius_model_arcsec / pixel_scale_model
-        )  # in pix
+        imsize_radius_avg_data_pix = r_zoom / pixel_scale_avg_data  # in pix
+        imsize_radius_model_pix = r_zoom / pixel_scale_model  # in pix
+        imsize_radius_residual_pix = r_zoom / pixel_scale_residual  # in pix
 
         boxsize_au = (
-            np.round((imsize_radius_model_arcsec * 2) * arc_to_au(dist), -1)/ cfg.zoom_factor
+            np.round((r_zoom * 2) * arc_to_au(dist), -1) / cfg.zoom_factor
         )  # Value -1 corresponds to rounding to the nearest 10 au
 
         ########################################
 
-        fig = plt.figure(figsize=(15, 5), layout="constrained")
+        fig = plt.figure(figsize=(20, 5))  # , layout="constrained")
+        gs = fig.add_gridspec(1, 4, wspace=0)
         #################### AX0 - DATA #################################################
 
-        ax0 = plt.subplot(131)
+        # ax0 = plt.subplot(141)
+        ax0 = fig.add_subplot(gs[0, 0])
 
-        if cfg.smooth or (name in cfg.special_cases["smooth"]):
+        mask = np.isfinite(data_avg_data)
+        # vmin = np.min(data_avg_data[mask])
+        # vmax = np.max(data_avg_data[mask])
+#IMPORTANT CONDITION (AND INSTEAD OF OR PAY ATTENTION)        
+        if cfg.smooth and (name in cfg.special_cases["smooth"]):
             # Smooth the disk
             _sigma = 2
-            smooth_data = gaussian_filter(data_data, sigma=_sigma, mode="nearest")
+            smooth_data = gaussian_filter(data_avg_data, sigma=_sigma, mode="nearest")
             im0 = ax0.imshow(
                 X=smooth_data,
                 origin="lower",
@@ -392,11 +411,13 @@ def plotter(cfg: PlotConfig):
                 aspect="equal",
                 vmin=rms_data,
             )
+            # vmin=rms_data,  # devo trocar o vmin??
+            # )
             # logger.info(15 * "!" + f" {name} was smoothed with gaussian {_sigma}")
             # print(f"{name} was smoothed with gaussian {_sigma}")
         else:
             im0 = ax0.imshow(
-                X=data_data,
+                X=data_avg_data,
                 origin="lower",
                 cmap="turbo",
                 aspect="equal",
@@ -408,30 +429,41 @@ def plotter(cfg: PlotConfig):
 
         # Limits
         ax0.set_xlim(
-            center_ra_pix - (imsize_radius_data_pix) / cfg.zoom_factor,
-            center_ra_pix + (imsize_radius_data_pix) / cfg.zoom_factor,
+            center_ra_pix - (imsize_radius_avg_data_pix) / cfg.zoom_factor,
+            center_ra_pix + (imsize_radius_avg_data_pix) / cfg.zoom_factor,
         )
         ax0.set_ylim(
-            center_dec_pix - (imsize_radius_data_pix) / cfg.zoom_factor,
-            center_dec_pix + (imsize_radius_data_pix) / cfg.zoom_factor,
+            center_dec_pix - (imsize_radius_avg_data_pix) / cfg.zoom_factor,
+            center_dec_pix + (imsize_radius_avg_data_pix) / cfg.zoom_factor,
         )
 
         ## Fixing ticks (pix) and labels (au) ###
         ticks_and_labels_ax0 = ft(boxsize_au, ax0=ax0)
         ticks_and_labels_ax0.set_myticks(
-            dist, pixel_scale_data, center_ra_pix, center_dec_pix
+            dist, pixel_scale_avg_data, center_ra_pix, center_dec_pix
         )
         ##################################################
         ## Adding patches ###
         patcher_ax0 = AddPatches(ax0)
-        patcher_ax0.add_beam(bmaj, bmin, bpa, pixel_scale_data)
+        patcher_ax0.add_beam(bmaj, bmin, bpa, pixel_scale_avg_data)
         patcher_ax0.add_name_text(name=name)
         patcher_ax0.add_flux_text(flux=b8_flux)
-        patcher_ax0.add_colorbar(fig, im0)
+        patcher_ax0.add_colorbar(fig, im0, cbarlabel=True)
 
         #################### AX1 - MODEL ###################################
-        ax1 = plt.subplot(132)
-        vmax = np.nanmax(data_model.data)
+
+        model_mask = np.isfinite(data_model)
+        # vmin = data_model[model_mask]
+        
+        vmax = np.max(data_model[model_mask])
+        #data_model[model_mask]/
+        # print("vmax of vmax is", np.max(vmax))
+        # print("shape of data model is: ", data_model.shape, "\n")
+        # ax1 = plt.subplot(142)
+        ax1 = fig.add_subplot(gs[0, 1])
+
+        # vmax = np.nanmax(data_model.data)
+        
         if isbinary == 1:
             vmin = 0.1 * vmax
         elif name in cfg.special_cases["apply_1%"]:
@@ -439,25 +471,40 @@ def plotter(cfg: PlotConfig):
             logger.info(f"1% as vmin were applied to {name}")
         else:
             vmin = 0.05 * vmax  # rms_model
-
+        # print("vmin is : ", vmin, "vmax is ", vmax)
+        
         if name in cfg.special_cases["nomodel"]:
-            nan_matrix = np.full(data_model.data.shape, np.nan)
+            nan_matrix = np.full(data_model.shape, np.nan)
             ax1.imshow(nan_matrix)
-            ax1.set_xticks([])
-            ax1.set_yticks([])
-            ax1.set_xticklabels([])
-            ax1.set_yticklabels([])
+            # ax1.set_xticks([])
+            # ax1.set_yticks([])
+            # ax1.set_xticklabels([])
+            # ax1.set_yticklabels([])
         else:
+            # ax1.imshow(np.random.random((100, 100)))
+            # ax1.set_facecolor("red")
+            # ax1.imshow(
+            #     np.ones((300, 300)),
+            #     origin="lower",
+            #     cmap="gray",
+            # )
             ax1.imshow(
                 data_model.data,
                 origin="lower",
                 cmap="turbo",
-                aspect="equal",
+                # aspect="equal",
                 vmin=vmin,
             )
-
+            # ax1.imshow(np.ones((50, 50)) * 2, cmap="autumn", alpha=0.5, zorder=100)
+            # print("ax1 images:", len(ax1.images))
+            # print("after imshow", ax1.get_xlim(), ax1.get_ylim())
+            # print(im1.get_visible())
+            # print(im1.get_zorder())
+            # print(ax1.images)
             ####################################################
+
             # Limits
+            # print(imsize_model_pix,imsize_radius_model_pix)
             ax1.set_xlim(
                 imsize_model_pix / 2 - (imsize_radius_model_pix) / cfg.zoom_factor,
                 imsize_model_pix / 2 + (imsize_radius_model_pix) / cfg.zoom_factor,
@@ -466,35 +513,130 @@ def plotter(cfg: PlotConfig):
                 imsize_model_pix / 2 - (imsize_radius_model_pix) / cfg.zoom_factor,
                 imsize_model_pix / 2 + (imsize_radius_model_pix) / cfg.zoom_factor,
             )
+            # print("after limits", ax1.get_xlim(), ax1.get_ylim())
+            
             ####################################################
             ## Fixing ticks (pix) and labels (au) ###
+            # ax1.clear()
+            # ax1.imshow(data_model.data)
+            patcher_ax1 = AddPatches(ax1)
+            patcher_ax1.add_type_text(text="Model")
             adapt_ax1_ticks_labels = ft(ax0=ax0, ax1=ax1)
             adapt_ax1_ticks_labels.set_adapted_ticks()
             ####################################################
+            ax1.set_yticklabels([])
             plt.xlabel(r"$\Delta$RA (au)", fontsize=16, fontweight="bold")
-            plt.ylabel(r"$\Delta$DEC (au)", fontsize=16, fontweight="bold")
+            # plt.ylabel(r"$\Delta$DEC (au)", fontsize=16, fontweight="bold")
+            # plt.xlabel("")
+            plt.ylabel("")
         if (
             name in cfg.special_cases["fillmodel"]
             or name in cfg.special_cases["nomodel"]
         ):
             # print(name)
             ax1.set_facecolor("black")
+        # patcher_ax1 = AddPatches(ax1)
+        # patcher_ax1.add_type_text(text="Model")
+        # patcher_ax0.add_flux_text(flux=b8_flux)
+        # patcher_ax0.add_colorbar(fig, im0, cbarlabel=True)
+        # plt.axis("off")
+        #################### ax2 - residual ######################################
+        # ax2 = plt.subplot(143)
+        ax2 = fig.add_subplot(gs[0, 2])
+        # vmax = np.nanmax(data_residual)
+        # if isbinary == 1:
+        #     vmin = 0.1 * vmax
+        # elif name in cfg.special_cases["apply_1%"]:
+        #     vmin = 0.01 * vmax
+        #     logger.info(f"1% as vmin were applied to {name}")
+        # else:
+        #     vmin = 0.05 * vmax  # rms_model
 
-        #################### AX2 - RADIAL_PROFILE ######################################
-        ax2 = plt.subplot(133)
         if name in cfg.special_cases["nomodel"]:
-            ax2.plot()
-            ax2.set_xticks([])
-            ax2.set_yticks([])
-            ax2.set_xticklabels([])
-            ax2.set_yticklabels([])
-            ax2.set_facecolor("black")
+            nan_matrix = np.full(data_model.data.shape, np.nan)
+            im2 = ax2.imshow(nan_matrix)
+            # ax2.set_xticks([])
+            # ax2.set_yticks([])
+            # # ax2.set_xticklabels([])
+            # ax2.set_yticklabels([])
+        else:
+            mask = np.isfinite(data_avg_data)
+            vmin = np.min(data_avg_data[mask])
+            vmax = np.max(data_avg_data[mask])
+            im2 = ax2.imshow(
+                data_residual,
+                origin="lower",
+                cmap="turbo",
+                aspect="equal",
+                vmin=vmin,
+                vmax=vmax,
+            )
+
+        # ########################################
+        # # Loading wcs
+        # pixel_scale_avg_data: float = (
+        #     header_avg_data["CDELT2"] * 3600
+        # )  # in arcsec / pixel
+        # pixel_scale_residual: float = (
+        #     header_residual["CDELT2"] * 3600
+        # )  # in arcsec / pixel
+        # wcs = WCS(header_avg_data)
+
+        # # imsize_radius_model_arcsec: float = r_zoom  # in arcsec
+
+        # # imsize_model_pix: float = header_model["NAXIS1"]  # in pix
+        # imsize_radius_avg_data_pix = r_zoom / pixel_scale_avg_data  # in pix
+        # imsize_radius_residual_pix = r_zoom / pixel_scale_residual  # in pix
+        # boxsize_au = (
+        #     np.round((r_zoom * 2) * arc_to_au(dist), -1) / cfg.zoom_factor
+        # )  # Value -1 corresponds to rounding to the nearest 10 au
+        ## Fixing ticks (pix) and labels (au) ###
+        # ticks_and_labels_ax2 = ft(boxsize_au, ax0=ax2)
+        # ticks_and_labels_ax2.set_myticks(
+        #     dist, pixel_scale_residual, center_ra_pix, center_dec_pix
+        # )
+
+        ax2.set_xlim(
+            center_ra_pix - (imsize_radius_residual_pix) / cfg.zoom_factor,
+            center_ra_pix + (imsize_radius_residual_pix) / cfg.zoom_factor,
+        )
+        ax2.set_ylim(
+            center_dec_pix - (imsize_radius_residual_pix) / cfg.zoom_factor,
+            center_dec_pix + (imsize_radius_residual_pix) / cfg.zoom_factor,
+        )
+        plt.xlabel(r"$\Delta$RA (au)", fontsize=16, fontweight="bold")
+        # plt.ylabel(r"$\Delta$DEC (au)", fontsize=16, fontweight="bold")
+        patcher_ax2 = AddPatches(ax2)
+        patcher_ax2.add_type_text(text="Residual")
+        patcher_ax2.add_colorbar(fig, im2, cbarlabel=True)
+        adapt_ax2_ticks_labels = ft(ax0=ax0, ax1=ax2)
+        adapt_ax2_ticks_labels.set_adapted_ticks()
+        ####################################################
+        # ax1.set_xticks([])
+        # ax1.set_yticks([])
+        # ax1.set_xticklabels([])
+        ax2.set_yticklabels([])
+        # plt.axis("off")
+        # plt.subplots_adjust(wspace=0, hspace=0)
+        #################### ax3 - RADIAL_PROFILE ######################################
+        # ax3 = plt.subplot(144)
+        ax3 = fig.add_subplot(gs[0, 3])
+        if name in cfg.special_cases["nomodel"]:
+            ax3.plot()
+            ax3.set_xticks([])
+            ax3.set_yticks([])
+            ax3.set_xticklabels([])
+            ax3.set_yticklabels([])
+            ax3.set_facecolor("black")
         else:
 
-            ax2 = plt.subplot(133)
+            # ax3 = plt.subplot(144)
 
-            ax2.plot(r_au, flxx, "k-", linewidth=2)
+            ax3.plot(r_au, flxx, "k-", linewidth=2)
+            plt.fill_between(r_au, flxx-err_flxx, flxx+err_flxx, color='blue', alpha=0.3, label=r'$\sigma_I$')
 
+            # print(type(err_flxx), np.shape(err_flxx))
+            # ax3.errorbar(r_au, flxx,yerr=err_flxx, fmt='k-',ecolor='red')#,linewidth=2)
             # Iterate through each source features in gap_ring_infl_pt.csv
 
             # Create a sorted list of labels
@@ -546,11 +688,11 @@ def plotter(cfg: PlotConfig):
                     fontweight="bold",
                 )
 
-            ax2.set_xlabel("Radius (au)", fontsize=16, fontweight="bold")
-            ax2.set_ylabel("Normalized Intensity", fontsize=16, fontweight="bold")
+            ax3.set_xlabel("Radius (au)", fontsize=16, fontweight="bold")
+            ax3.set_ylabel("Normalized Intensity", fontsize=16, fontweight="bold")
 
             # Write tick labels in boldface
-            for label in ax2.get_xticklabels() + ax2.get_yticklabels():
+            for label in ax3.get_xticklabels() + ax3.get_yticklabels():
                 label.set_fontweight("bold")
             plt.minorticks_on()
             plt.xlim(left=0)
@@ -572,12 +714,17 @@ def plotter(cfg: PlotConfig):
                 plt.axhspan(0, imax, alpha=0.2, color="red")
                 plt.axhline(imax, color="black", linestyle=":", lw=2.5, alpha=0.8)
             plt.axvspan(r_max, right_limit, alpha=0.2, color="gray", hatch="/")
-            ax2.tick_params(axis="both", width=1, top=True, right=True, labelsize=14)
+            ax3.tick_params(axis="both", width=1, top=True, right=True, labelsize=14)
+        pos3 = ax3.get_position()
+        ax3.set_position([pos3.x0 + 0.05, pos3.y0, pos3.width, pos3.height])
+        plt.legend(loc='upper right')
 
         #######################################################################################
-        ax0.set_box_aspect(1)
-        ax1.set_box_aspect(1)
-        ax2.set_box_aspect(0.99)
+        # ax0.set_box_aspect(1)
+        # ax1.set_box_aspect(1)
+        # ax2.set_box_aspect(1)
+        # ax3.set_box_aspect(1)
+        # plt.subplots_adjust(wspace=0, hspace=0)
         #######################################################################################
 
         if cfg.flux_ordered:
@@ -638,10 +785,10 @@ def plotter(cfg: PlotConfig):
 
             ########################################
 
-            fig_data_res = plt.figure(figsize=(10, 5), layout="constrained")
+            fig_data_res = plt.figure(figsize=(15, 5), layout="constrained")
 
             #################### AX0 - AVG DATA #################################################
-            ax3 = plt.subplot(121)
+            ax3 = plt.subplot(131)
 
             mask = np.isfinite(data_avg_data)
             vmin = np.min(data_avg_data[mask])
@@ -678,13 +825,65 @@ def plotter(cfg: PlotConfig):
             ##################################################
             ## Adding patches ###
             patcher_ax3 = AddPatches(ax3)
-            # patcher_ax3.add_beam(bmaj, bmin, bpa, pixel_scale_data)
+            # patcher_ax3.add_beam(bmaj, bmin, bpa, pixel_scale_avg_data)
             patcher_ax3.add_name_text(name=name)
             patcher_ax3.add_type_text(text="Data")
             # patcher_ax3.add_flux_text(flux=b8_flux)
             patcher_ax3.add_colorbar(fig_data_res, im3, cbarlabel=True)
 
-            ax4 = plt.subplot(122)
+            ax31 = plt.subplot(132)
+            vmax = np.nanmax(data_model.data)
+            if isbinary == 1:
+                vmin = 0.1 * vmax
+            elif name in cfg.special_cases["apply_1%"]:
+                vmin = 0.01 * vmax
+                logger.info(f"1% as vmin were applied to {name}")
+            else:
+                vmin = 0.05 * vmax  # rms_model
+
+            if name in cfg.special_cases["nomodel"]:
+                nan_matrix = np.full(data_model.data.shape, np.nan)
+                ax31.imshow(nan_matrix)
+                ax31.set_xticks([])
+                ax31.set_yticks([])
+                ax31.set_xticklabels([])
+                ax31.set_yticklabels([])
+            else:
+                ax31.imshow(
+                    data_model.data,
+                    origin="lower",
+                    cmap="turbo",
+                    aspect="equal",
+                    vmin=vmin,
+                )
+
+                ####################################################
+                # Limits
+                ax31.set_xlim(
+                    imsize_model_pix / 2 - (imsize_radius_model_pix) / cfg.zoom_factor,
+                    imsize_model_pix / 2 + (imsize_radius_model_pix) / cfg.zoom_factor,
+                )
+                ax31.set_ylim(
+                    imsize_model_pix / 2 - (imsize_radius_model_pix) / cfg.zoom_factor,
+                    imsize_model_pix / 2 + (imsize_radius_model_pix) / cfg.zoom_factor,
+                )
+                ####################################################
+                ## Fixing ticks (pix) and labels (au) ###
+                # adapt_ax1_ticks_labels = ft(ax0=ax0, ax1=ax1)
+                # adapt_ax1_ticks_labels.set_adapted_ticks()
+                ####################################################
+                # plt.xlabel(r"$\Delta$RA (au)", fontsize=16, fontweight="bold")
+                # plt.ylabel(r"$\Delta$DEC (au)", fontsize=16, fontweight="bold")
+                plt.xlabel("")
+                plt.ylabel("")
+            if (
+                name in cfg.special_cases["fillmodel"]
+                or name in cfg.special_cases["nomodel"]
+            ):
+                # print(name)
+                ax31.set_facecolor("black")
+
+            ax4 = plt.subplot(133)
             im4 = ax4.imshow(
                 data_residual,
                 origin="lower",
