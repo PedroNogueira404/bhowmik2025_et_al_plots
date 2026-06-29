@@ -17,8 +17,9 @@ from dataclasses import dataclass
 # === Third-Party ===
 import numpy as np
 import pandas as pd
+# import matplotlib
 import matplotlib.pyplot as plt
-
+# matplotlib.use('Agg')
 # from scipy import special
 from tqdm import tqdm
 from scipy.ndimage import gaussian_filter
@@ -311,7 +312,7 @@ def plotter(cfg: PlotConfig):
 
         # Normalize the flux
         flux_max = np.nanmax(flxx)
-        flxx /= flux_max  # np.nanmax(flxx)
+        flxx /= flux_max  
         err_flxx /= flux_max
         # thresh_norm_model = rms_model / flux_max
         r_au = r_arcsec * arc_to_au(dist)
@@ -452,17 +453,12 @@ def plotter(cfg: PlotConfig):
 
         #################### AX1 - MODEL ###################################
 
-        model_mask = np.isfinite(data_model)
-        # vmin = data_model[model_mask]
-        
-        vmax = np.max(data_model[model_mask])
-        #data_model[model_mask]/
-        # print("vmax of vmax is", np.max(vmax))
-        # print("shape of data model is: ", data_model.shape, "\n")
         # ax1 = plt.subplot(142)
         ax1 = fig.add_subplot(gs[0, 1])
 
-        # vmax = np.nanmax(data_model.data)
+        vmax = np.nanmax(data_model.data, where=np.isfinite(data_model.data), initial=-np.inf)
+
+
         
         if isbinary == 1:
             vmin = 0.1 * vmax
@@ -494,13 +490,8 @@ def plotter(cfg: PlotConfig):
                 cmap="turbo",
                 # aspect="equal",
                 vmin=vmin,
-            )
-            # ax1.imshow(np.ones((50, 50)) * 2, cmap="autumn", alpha=0.5, zorder=100)
-            # print("ax1 images:", len(ax1.images))
-            # print("after imshow", ax1.get_xlim(), ax1.get_ylim())
-            # print(im1.get_visible())
-            # print(im1.get_zorder())
-            # print(ax1.images)
+                vmax=vmax)
+            
             ####################################################
 
             # Limits
@@ -608,7 +599,7 @@ def plotter(cfg: PlotConfig):
         # plt.ylabel(r"$\Delta$DEC (au)", fontsize=16, fontweight="bold")
         patcher_ax2 = AddPatches(ax2)
         patcher_ax2.add_type_text(text="Residual")
-        patcher_ax2.add_colorbar(fig, im2, cbarlabel=True)
+        # patcher_ax2.add_colorbar(fig, im2, cbarlabel=True)
         adapt_ax2_ticks_labels = ft(ax0=ax0, ax1=ax2)
         adapt_ax2_ticks_labels.set_adapted_ticks()
         ####################################################
@@ -631,9 +622,31 @@ def plotter(cfg: PlotConfig):
         else:
 
             # ax3 = plt.subplot(144)
+            ## equation of flux uncertainty propagation - band 8, ALMA ##
+            # Propagating I_uncer with, e.g. ALMA absolute flux calibration uncertainty  (15% at Band 8 ) would be a step in the right direction if you wanted to make the uncertainties more representative. There are still other sources of uncertainty that we aren't considering but its still useful #
+            
+            ## just combine the frank uncertainty with the ALMA flux uncertainty :  ( (I_uncer/I)^2 + (0.15)^2) ) ##
+            # uncert_flxx = flxx*(np.sqrt(((err_flxx/flxx)**2) + 0.15**2))
+            uncert_flxx = np.sqrt(err_flxx**2 + (0.15*flxx)**2)
+            
+            #test
+            # u1 = flxx * np.sqrt((err_flxx/flxx)**2 + 0.15**2)
+            # u2 = np.sqrt(err_flxx**2 + (0.15*flxx)**2)
+            # print("min(flxx):", np.nanmin(flxx))
+            # print("max(flxx):", np.nanmax(flxx))
+            # print("N negativos:", np.sum(flxx < 0))
+            # print("N zeros:", np.sum(flxx == 0))
+            # print("N NaN:", np.sum(np.isnan(flxx)))
+            # idx = np.nanargmax(np.abs(u1-u2))
 
+            # print("idx =", idx)
+            # print("flxx =", flxx[idx])
+            # print("err_flxx =", err_flxx[idx])
+            # print("u1 =", u1[idx])
+            # print("u2 =", u2[idx])
+            # print(np.nanmax(np.abs(u1 - u2)))
             ax3.plot(r_au, flxx, "k-", linewidth=2)
-            plt.fill_between(r_au, flxx-err_flxx, flxx+err_flxx, color='blue', alpha=0.3, label=r'$\sigma_I$')
+            plt.fill_between(r_au, flxx-uncert_flxx, flxx+uncert_flxx, color='blue', alpha=0.4, label=r'$\sigma_I$')
 
             # print(type(err_flxx), np.shape(err_flxx))
             # ax3.errorbar(r_au, flxx,yerr=err_flxx, fmt='k-',ecolor='red')#,linewidth=2)
